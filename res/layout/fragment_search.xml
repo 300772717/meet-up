@@ -1,0 +1,44 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rlSearch"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="team.artyukh.project.fragments.SearchFragment" >
+
+    <Button
+        android:id="@+id/btnBackToSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="backToSearch"
+        android:text="Another Search" />
+
+    <EditText
+        android:id="@+id/etInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:ems="10"
+        android:hint="Username" />
+
+    <Button
+        android:id="@+id/btnStartSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etInput"
+        android:layout_centerHorizontal="true"
+        android:onClick="startSearch"
+        android:text="Search" />
+
+    <RelativeLayout
+        android:id="@+id/fragment_container_search"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/btnBackToSearch"
+        android:layout_centerHorizontal="true" >
+
+    </RelativeLayout>
+
+</RelativeLayout>
