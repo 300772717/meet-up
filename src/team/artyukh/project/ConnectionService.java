@@ -33,7 +33,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class ConnectionService extends Service {
-	//COMMENT CHANGE
+	//COMMENT CHANGE AGAIN
 	public static final String INTENT_MESSAGE = "INTENT_MESSAGE";
 	private static final String PREFS_FILE = "team.artyukh.project.PREFS_FILE";
 	private SharedPreferences data;
