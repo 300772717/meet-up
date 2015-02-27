@@ -45,7 +45,7 @@ public class SearchFragment extends Fragment {
 		setViews();
 	}
 	
-	public void setResult(ArrayList<IListable> adapterList){
+	public void setResult(BindingActivity parent, ArrayList<IListable> adapterList){
 		setAdapter(new ListableAdapter(parent, adapterList));
 		showingResults = true;
 	}

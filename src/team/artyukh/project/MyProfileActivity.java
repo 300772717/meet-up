@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import team.artyukh.project.messages.client.ImageUploadRequest;
 import team.artyukh.project.messages.client.ModifyProfileRequest;
 import android.content.Intent;
@@ -12,6 +13,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -49,7 +52,7 @@ public class MyProfileActivity extends BindingActivity {
 		status.setText(getStringPref(PREF_STATUS));
 		
 		Bitmap bmp;
-		if((bmp = getBitmap(getStringPref(PREF_USER_ID))) != null){
+		if((bmp = getBitmap(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getStringPref(PREF_USER_ID))) != null){
 			profilePic.setImageBitmap(bmp);
 		}
 	}
@@ -111,7 +114,21 @@ public class MyProfileActivity extends BindingActivity {
 			String picturePath = cursor.getString(columnIndex);
 			cursor.close();
 
-			Bitmap picture = BitmapFactory.decodeFile(picturePath);
+			Drawable drawable = profilePic.getDrawable();
+			if (drawable instanceof BitmapDrawable) {
+			    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+			    Bitmap bitmap = bitmapDrawable.getBitmap();
+			    bitmap.recycle();
+			}
+//			final BitmapFactory.Options options = new BitmapFactory.Options();
+////		    options.inSampleSize = 16;
+//		    options.inJustDecodeBounds = true;
+//		    BitmapFactory.decodeFile(picturePath, options);
+//		    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);
+//		    
+//		    options.inJustDecodeBounds = false;
+//			Bitmap picture = BitmapFactory.decodeFile(picturePath, options);
+			Bitmap picture = getBitmap(new File(picturePath));
 			profilePic.setImageBitmap(picture);
 			
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();

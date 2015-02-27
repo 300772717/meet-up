@@ -138,7 +138,7 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(ImageDownloadUpdate message){
-		ListableAdapter.saveNewBitmap(message.getObjectId(), getBitmap(message.getObjectId()));
+		ListableAdapter.saveNewBitmap(message.getObjectId(), getBitmap(getExternalFilesDir(Environment.DIRECTORY_PICTURES), message.getObjectId()));
 	}
 
 	protected void applyUpdate(InviteUpdate message) {
@@ -202,20 +202,68 @@ public abstract class BindingActivity extends FragmentActivity {
 		connService.addPendingInvite(invite);
 	}
 	
-	protected Bitmap getBitmap(String objId){
-		File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+	protected static Bitmap getBitmap(File dir, String objId){
+//		File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 		
 		for(String filename : dir.list()){
 			Log.i("CHECKING FILE", filename);
 			if(filename.startsWith(objId)){
 				File image = new File(dir, filename);
+				
 				final BitmapFactory.Options options = new BitmapFactory.Options();
+			    options.inJustDecodeBounds = true;
+			    BitmapFactory.decodeFile(image.getAbsolutePath(), options);
+			    options.inSampleSize = calculateInSampleSize(options, 150, 150);
+			    
+			    options.inJustDecodeBounds = false;
 				Bitmap bmp = BitmapFactory.decodeFile(image.getAbsolutePath(), options);
+//				Bitmap bmp = BitmapFactory.decodeFile(image.getAbsolutePath(), options);
 				return bmp;
 			}
-		}
-		
+		}		
 		return null;
+	}
+	
+	protected static Bitmap getBitmap(File imageFile){		
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+	    options.inJustDecodeBounds = true;
+	    BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+	    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);
+	    
+	    options.inJustDecodeBounds = false;
+		Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+		
+		return bmp;
+	}
+	
+	protected static Bitmap getBitmap(byte[] data){		
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+	    BitmapFactory.decodeByteArray(data, 0, data.length, options);
+	    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);	    
+	    options.inJustDecodeBounds = false;
+	    Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+	    
+	    return bmp;
+	}
+	
+	public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+
+			final int halfHeight = height / 2;
+			final int halfWidth = width / 2;
+			
+			while ((halfHeight / inSampleSize) > reqHeight
+					&& (halfWidth / inSampleSize) > reqWidth) {
+				inSampleSize *= 2;
+			}
+		}
+
+		return inSampleSize;
 	}
 	
 	@Override

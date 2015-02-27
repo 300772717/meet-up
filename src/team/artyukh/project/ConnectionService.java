@@ -178,11 +178,16 @@ public class ConnectionService extends Service {
 			OutputStream os = new FileOutputStream(newImage);
 			byte[] data = update.getImageBytes();
 //			InputStream is = new ByteArrayInputStream(data);
-			final BitmapFactory.Options options = new BitmapFactory.Options();
-//		    options.inSampleSize = 16;
-//		    options.inJustDecodeBounds = true;
-			Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-			Log.i("BOUNDS", "WIDE " + options.outWidth + " HIGH " + options.outHeight);
+//			final BitmapFactory.Options options = new BitmapFactory.Options();
+////		    options.inSampleSize = 16;
+////		    options.inJustDecodeBounds = true;
+//			options.inJustDecodeBounds = true;
+//		    BitmapFactory.decodeByteArray(data, 0, data.length, options);
+//		    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);
+//		    
+//		    options.inJustDecodeBounds = false;
+		    Bitmap image = BindingActivity.getBitmap(data);
+//			Log.i("BOUNDS", "WIDE " + options.outWidth + " HIGH " + options.outHeight);
 			image.compress(Bitmap.CompressFormat.JPEG, 70, os);
 			image.recycle();
 			try {

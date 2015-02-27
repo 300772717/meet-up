@@ -104,7 +104,7 @@ public class HomeActivity extends BindingActivity {
     }
     
     protected void applyUpdate(SearchUpdate message){
-		fragSearch.setResult(message.getResult());
+		fragSearch.setResult(HomeActivity.this, message.getResult());
 		myPager.setCurrentItem(3);
 	}
     

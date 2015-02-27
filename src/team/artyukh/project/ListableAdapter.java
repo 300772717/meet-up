@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -69,7 +70,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		}
 		else{
 			holder.icon.setImageResource(R.drawable.icon_person);
-			image = parent.getBitmap(list.get(pos).getId());
+			image = BindingActivity.getBitmap(parent.getExternalFilesDir(Environment.DIRECTORY_PICTURES), list.get(pos).getId());
 			if(image != null){
 				bitmapHash.put(list.get(pos).getId(), image);
 				holder.icon.setImageBitmap(image);
