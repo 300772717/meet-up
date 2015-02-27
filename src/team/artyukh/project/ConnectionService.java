@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.messages.client.ImageDownloadRequest;
+import team.artyukh.project.messages.client.InviteRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
@@ -127,17 +128,8 @@ public class ConnectionService extends Service {
 		
 		if(!BindingActivity.getStringPref(BindingActivity.PREF_GROUP).equals("")){
 			for (String username : pendingInvites) {
-				JSONObject invObj = new JSONObject();
-
-				try {
-					invObj.put("type", "invite");
-					invObj.put("inviteuser", username);
-					invObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-					invObj.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				send(invObj.toString());
+				InviteRequest invite = new InviteRequest(username);
+				send(invite.toString());
 			}
 			pendingInvites.clear();
 		}
@@ -177,17 +169,7 @@ public class ConnectionService extends Service {
 			
 			OutputStream os = new FileOutputStream(newImage);
 			byte[] data = update.getImageBytes();
-//			InputStream is = new ByteArrayInputStream(data);
-//			final BitmapFactory.Options options = new BitmapFactory.Options();
-////		    options.inSampleSize = 16;
-////		    options.inJustDecodeBounds = true;
-//			options.inJustDecodeBounds = true;
-//		    BitmapFactory.decodeByteArray(data, 0, data.length, options);
-//		    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);
-//		    
-//		    options.inJustDecodeBounds = false;
 		    Bitmap image = BindingActivity.getBitmap(data);
-//			Log.i("BOUNDS", "WIDE " + options.outWidth + " HIGH " + options.outHeight);
 			image.compress(Bitmap.CompressFormat.JPEG, 70, os);
 			image.recycle();
 			try {

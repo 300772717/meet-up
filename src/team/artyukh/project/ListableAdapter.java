@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
@@ -82,7 +83,8 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			
 			holder.one.setText("Profile");
 			holder.two.setText("Invite");
-			holder.two.setOnClickListener(setListener(pos));
+			holder.one.setOnClickListener(openProfile(pos));
+			holder.two.setOnClickListener(sendInvite(pos));
 		}
 		else if(list.get(pos).getType().equals("marker")){
 			holder.one.setText("Info");
@@ -105,57 +107,27 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		return list.size();
 	}
 	
-//	private OnClickListener setListener(final Class cls){
-//		
-//		OnClickListener listener = new View.OnClickListener() {
-//            public void onClick(View v) {
-//                Intent activityChangeIntent = new Intent(parent, cls);
-//                parent.startActivity(activityChangeIntent);
-//            }
-//        };
-//        
-//        return listener;
-//	}
-	
-	private OnClickListener setListener(final int pos) {
-
+	private OnClickListener openProfile(final int pos){
 		OnClickListener listener = new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
-				
-				JSONObject invObj = new JSONObject();
-
-				try {
-					invObj.put("type", "invite");
-					invObj.put("inviteuser", list.get(pos).getTitle());
-					invObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-					invObj.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				
-				if(BindingActivity.getStringPref(BindingActivity.PREF_GROUP).equals("")){
-					JSONObject grpObj = new JSONObject();
-
-					try {
-						grpObj.put("type", "newgroup");
-						//grpObj.put("id", BindingActivity.getStringPref(BindingActivity.PREF_DEVICE_ID));
-						grpObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					
-					parent.send(grpObj.toString());
-					parent.sendPendingInvite(list.get(pos).getTitle());
-					BindingActivity.removePref(BindingActivity.PREF_CHAT);
-					return;
-				}
-				
-				
-
-				parent.send(invObj.toString());
+				Intent intent = new Intent(parent, OtherProfileActivity.class);
+				intent.putExtra("userid", list.get(pos).getId());
+				parent.startActivity(intent);
 			}
 		};
-
+		
+		return listener;
+	}
+	
+	private OnClickListener sendInvite(final int pos){
+		OnClickListener listener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				parent.sendInvite(list.get(pos).getTitle());				
+			}
+		};
+		
 		return listener;
 	}
 }

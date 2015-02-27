@@ -6,6 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import team.artyukh.project.ConnectionService.ServiceBinder;
+import team.artyukh.project.messages.client.InviteRequest;
+import team.artyukh.project.messages.client.NewGroupRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
@@ -14,6 +16,8 @@ import team.artyukh.project.messages.server.LoginUpdate;
 import team.artyukh.project.messages.server.MapUpdate;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
+import team.artyukh.project.messages.server.ViewProfileUpdate;
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -25,12 +29,19 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 public abstract class BindingActivity extends FragmentActivity {
 	
@@ -62,7 +73,58 @@ public abstract class BindingActivity extends FragmentActivity {
 				processMessage(message);
 			}
 		};
+		
+//		addNotificationSpinner();
     }
+	
+	private void addNotificationSpinner()
+	{
+	    ActionBar mActionBar = getActionBar();
+	    mActionBar.setDisplayShowCustomEnabled( true );
+
+	    LayoutInflater inflater = LayoutInflater.from( this );
+	    View header = inflater.inflate( R.layout.notification_spinner, null );
+
+//	    Spinner spnr = (Spinner) header.findViewById( R.id.spnrNotifications );
+	    TextView spnr = (TextView) header.findViewById(R.id.tvNotify);
+//	    tv.setText( textToSet );
+
+	    Display display = getWindowManager().getDefaultDisplay();
+	    Point size = new Point();
+	    display.getSize(size);
+	    int actionBarWidth = size.x;
+//	    int actionBarWidth = DeviceHelper.getDeviceWidth( this ); //Google for this method. Kinda easy.
+
+	    spnr.measure(0, 0);
+	    int tvSize = spnr.getMeasuredWidth();
+	    int leftSpace = 0;
+	    try
+	    {
+	        View homeButton = findViewById( android.R.id.home );
+	        final ViewGroup holder = (ViewGroup) homeButton.getParent();
+
+	        View firstChild =  holder.getChildAt( 0 );
+	        View secondChild =  holder.getChildAt( 1 );
+
+	        leftSpace = firstChild.getWidth()+secondChild.getWidth();
+	    }
+	    catch ( Exception ignored )
+	    {}
+
+	    mActionBar.setCustomView( header );
+
+	    if ( null != header )
+	    {
+	        ActionBar.LayoutParams params = (ActionBar.LayoutParams) header.getLayoutParams();
+
+	        if ( null != params )
+	        {
+	            int leftMargin =  ( actionBarWidth / 2 - ( leftSpace ) ) - ( tvSize / 2 ) ;
+
+	            params.leftMargin = 0 >= leftMargin ? 0 : leftMargin;
+	        }
+	    }
+	}
 	
 	protected static void setPref(String key, String value){
 		data.edit().putString(key, value).apply();
@@ -107,6 +169,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				Log.i("MEMBERS", msgObj.toString());
 			} else if (type.equals("imagedownload")){
 				applyUpdate(new ImageDownloadUpdate(msgObj));
+			} else if (type.equals("viewprofile")){
+				applyUpdate(new ViewProfileUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -172,6 +236,10 @@ public abstract class BindingActivity extends FragmentActivity {
 
 	}
 	
+	protected void applyUpdate(ViewProfileUpdate message){
+		
+	}
+	
 	private void joinGroup(String groupId){
 		JSONObject joinObj = new JSONObject();
 		
@@ -198,8 +266,22 @@ public abstract class BindingActivity extends FragmentActivity {
 		}
 	}
 	
-	protected void sendPendingInvite(String invite){
-		connService.addPendingInvite(invite);
+//	protected void sendPendingInvite(String invite){
+//		connService.addPendingInvite(invite);
+//	}
+	
+	protected void sendInvite(String username){
+		InviteRequest invite = new InviteRequest(username);
+		
+		if(BindingActivity.getStringPref(BindingActivity.PREF_GROUP).equals("")){
+			NewGroupRequest groupRequest = new NewGroupRequest();
+			
+			send(groupRequest.toString());
+			connService.addPendingInvite(username);
+			removePref(BindingActivity.PREF_CHAT);
+			return;
+		}
+		send(invite.toString());
 	}
 	
 	protected static Bitmap getBitmap(File dir, String objId){
@@ -225,6 +307,8 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected static Bitmap getBitmap(File imageFile){		
+		if(!imageFile.exists()) return null;
+		
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 	    options.inJustDecodeBounds = true;
 	    BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
@@ -285,6 +369,10 @@ public abstract class BindingActivity extends FragmentActivity {
         super.onStop();
     }
     
+    protected void onServiceConnected(){
+    	//OVERRIDE THIS IN ACTIVITIES THAT NEED TO HANDLE ONSERVICECONNECTED
+    }
+    
     private ServiceConnection sConnection = new ServiceConnection(){
 
 		@Override
@@ -292,6 +380,7 @@ public abstract class BindingActivity extends FragmentActivity {
 			ServiceBinder binder = (ServiceBinder) service;
 			connService = binder.getService();
 			serviceBound = true;
+			BindingActivity.this.onServiceConnected();
 		}
 
 		@Override
