@@ -1,7 +1,13 @@
 package team.artyukh.project;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import team.artyukh.project.messages.client.AddFriendRequest;
 import team.artyukh.project.messages.client.ImageDownloadRequest;
+import team.artyukh.project.messages.client.RemoveFriendRequest;
 import team.artyukh.project.messages.client.ViewProfileRequest;
+import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.ViewProfileUpdate;
 import android.app.Activity;
@@ -13,17 +19,21 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class OtherProfileActivity extends BindingActivity {
+public class OtherProfileActivity extends BindingActivity implements OnClickListener {
 
 	private TextView username;
 	private TextView status;
 	private ImageView profilePic;
+	private Button btnFriend;
 	private String userId;
 	private String userName = null;
 	private boolean needImage = true;
+	private boolean alreadyFriends = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +46,10 @@ public class OtherProfileActivity extends BindingActivity {
 		username = (TextView) findViewById(R.id.tvOtherUsername);
 		status = (TextView) findViewById(R.id.tvOtherStatus);
 		profilePic = (ImageView) findViewById(R.id.ivUserPicture);
+		btnFriend = (Button) findViewById(R.id.btnFriend);
+		
+		alreadyFriends = checkFriendlist();
+		btnFriend.setOnClickListener(this);
 		
 		Bitmap image = getBitmap(getExternalFilesDir(Environment.DIRECTORY_PICTURES), userId);
 		if(image == null){
@@ -72,10 +86,42 @@ public class OtherProfileActivity extends BindingActivity {
 		}
 	}
 	
+	@Override
+	protected void applyUpdate(FriendIdUpdate update){
+		alreadyFriends = checkFriendlist();
+	}
+	
 	public void sendInvite(View v){
 		if(userName != null){
 			sendInvite(userName);
 		}
+	}
+	
+	@Override
+	public void onClick(View v) {
+		if(alreadyFriends){
+			send((new RemoveFriendRequest(userId)).toString());
+		}
+		else{
+			send((new AddFriendRequest(userId)).toString());
+		}
+	}
+	
+	private boolean checkFriendlist(){
+		String friendPref = getStringPref(PREF_FRIENDS);
+		try {
+			JSONArray friendArr = new JSONArray(friendPref);
+			for(int i = 0; i < friendArr.length(); i++){
+				if(friendArr.getString(i).equals(userId)){
+					btnFriend.setText("Remove Friend");
+					return true;
+				}
+			}
+		} catch (JSONException e) {
+		}
+		
+		btnFriend.setText("Add as Friend");
+		return false;
 	}
 
 	@Override
