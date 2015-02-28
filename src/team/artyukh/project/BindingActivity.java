@@ -17,6 +17,7 @@ import team.artyukh.project.messages.server.LoginUpdate;
 import team.artyukh.project.messages.server.MapUpdate;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
+import team.artyukh.project.messages.server.ViewFriendsUpdate;
 import team.artyukh.project.messages.server.ViewProfileUpdate;
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -175,6 +176,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ViewProfileUpdate(msgObj));
 			} else if(type.equals("friendidupdate")){
 				applyUpdate(new FriendIdUpdate(msgObj));
+			} else if(type.equals("viewfriends")){
+				applyUpdate(new ViewFriendsUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -245,6 +248,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(FriendIdUpdate message){
+		
+	}
+	
+	protected void applyUpdate(ViewFriendsUpdate message){
 		
 	}
 	

@@ -1,5 +1,6 @@
 package team.artyukh.project.lists;
 
+import team.artyukh.project.FriendsActivity;
 import team.artyukh.project.MyPlacesActivity;
 import team.artyukh.project.MyProfileActivity;
 import android.content.Context;
@@ -26,6 +27,10 @@ public class DrawerItemClickListener implements ListView.OnItemClickListener {
 			break;
 		case 1:
 			intent.setClass(mContext, MyPlacesActivity.class);
+			mContext.startActivity(intent);
+			break;
+		case 2:
+			intent.setClass(mContext, FriendsActivity.class);
 			mContext.startActivity(intent);
 			break;
 		}

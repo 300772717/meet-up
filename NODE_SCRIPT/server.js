@@ -111,6 +111,9 @@ wss.on('connection', function(ws) {
 			case 'removefriend':
 				removeFriend(data, ws);
 				break;
+			case 'viewfriends':
+				sendFriendList(data, ws);
+				break;
 		}
 		
 	});
@@ -508,21 +511,22 @@ function sendFriendIdList(friends, socket){
 
 function sendFriendList(data, socket){
 	var response = {};
-	response.type = 'viewfriends';
+	response.type = data.type;
+	response.friends = [];
 	
 	idModel.findOne()
 	.where('username').equals(data.username)
 	.select('friends')
-	.exec(function(err, doc){
-		console.log('found destination user');
+	.exec(function(err, doc){	
 		if(!err && doc){
+			// console.log('found destination user');
 			idModel.find()
 			.where('_id').in(doc.friends)
 			.select('id username status picDate')
 			.exec(function(err, docs){
 				if(!err){
 					for(var i = 0; i < docs.length; i++){
-						console.log('adding friend ' + docs[i]);
+						// console.log('adding friend ' + docs[i]);
 						response.friends.push(docs[i]);
 					}
 					

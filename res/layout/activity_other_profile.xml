@@ -28,7 +28,7 @@
         android:src="@drawable/icon_person" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/tvNoFriends"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ivUserPicture"
@@ -39,7 +39,7 @@
         android:id="@+id/tvOtherUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
+        android:layout_below="@+id/tvNoFriends"
         android:layout_centerHorizontal="true"
         android:text="Empty" />
 

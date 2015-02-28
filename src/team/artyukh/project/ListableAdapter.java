@@ -26,6 +26,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 	private BindingActivity parent;
 	private final ArrayList<IListable> list;
 	private static HashMap<String, Bitmap> bitmapHash = new HashMap<String, Bitmap>();
+	private boolean select = false;
 	static class ViewHolder {
 		public TextView title;
 		public TextView body;
@@ -34,11 +35,12 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		public Button two;
 	}
 	
-	public ListableAdapter(BindingActivity context, ArrayList<IListable> list){
+	public ListableAdapter(BindingActivity context, ArrayList<IListable> list, boolean selectable){
 		super(context, R.layout.rowview_listable, list);
 		
 		this.parent = context;
 		this.list = list;
+		this.select = selectable;
 	}
 	
 	@Override
@@ -61,7 +63,6 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 
 		ViewHolder holder = (ViewHolder) row.getTag();
 		
-		
 		holder.title.setText(list.get(pos).getTitle());
 		holder.body.setText(list.get(pos).getBody());
 		
@@ -78,6 +79,11 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			}		
 		}
 //		Log.i("HASH SIZE", bitmapHash.size() + "");
+		if(select){
+			holder.one.setFocusable(false);
+			holder.two.setFocusable(false);
+			row.setBackground(parent.getResources().getDrawable(R.drawable.ilistable_background));
+		}
 		
 		if(list.get(pos).getType().equals("person")){
 			

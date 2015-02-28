@@ -65,7 +65,7 @@ public class GroupFragment extends Fragment implements OnClickListener {
     
     public void setMemberAdapter(ArrayList<IListable> members, BindingActivity activity){
     	Log.i("GROUP MEMBER# ", members.size() + "");
-    	adapter = new ListableAdapter(activity, members);
+    	adapter = new ListableAdapter(activity, members, false);
     	showMembers();
     }
     
@@ -86,7 +86,7 @@ public class GroupFragment extends Fragment implements OnClickListener {
 				member = members.getJSONObject(i);
 				adapterList.add(new Person(member.getString("username"), member.getString("status"), member.getString("id"), member.getString("picDate")));
 			}
-			adapter = new ListableAdapter(parent, adapterList);
+			adapter = new ListableAdapter(parent, adapterList, false);
 		} catch (JSONException e) {
 			Log.i("EX_GROUP", e.toString());
 		}

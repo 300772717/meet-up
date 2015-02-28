@@ -13,5 +13,6 @@
     <string name="title_activity_my_profile">MyProfileActivity</string>
     <string name="title_activity_my_places">MyPlacesActivity</string>
     <string name="title_activity_other_profile">OtherProfileActivity</string>
+    <string name="title_activity_friends">FriendsActivity</string>
 
 </resources>

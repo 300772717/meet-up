@@ -7,15 +7,21 @@ import team.artyukh.project.ListableAdapter;
 import team.artyukh.project.R;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 public class ListableFragment extends Fragment {
 
-	private ListView list;
+	private ListView list = null;
+	private boolean selectableList = false;
 	private int size = 0;
 	private ListableAdapter mAdapter;
 	private BindingActivity mParent;
@@ -25,7 +31,7 @@ public class ListableFragment extends Fragment {
 	
 	public ListableFragment(BindingActivity parent){
 		mParent = parent;
-		mAdapter = new ListableAdapter(parent, new ArrayList<IListable>());
+		mAdapter = new ListableAdapter(parent, new ArrayList<IListable>(), false);
 	}
 	
 	public void setAdapter(ListableAdapter adapter){
@@ -37,16 +43,28 @@ public class ListableFragment extends Fragment {
 		else{
 			size = 0;
 		}
-		scrollBottom();
+//		scrollBottom();
 	}
 	
 	public void clearAdapter(){
-		mAdapter = new ListableAdapter(mParent, new ArrayList<IListable>());
+		mAdapter = new ListableAdapter(mParent, new ArrayList<IListable>(), false);
 		list.setAdapter(mAdapter);
 	}
 	
 	public ListableAdapter getAdapter(){
 		return this.mAdapter;
+	}
+	
+	public void makeSelectable(){
+		selectableList = true;
+		if(list != null){
+			list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		}
+	}
+	
+	public int getSelectedItemPosition(){
+		
+		return list.getCheckedItemPosition();
 	}
 	
 	public void scrollBottom(){
@@ -96,11 +114,20 @@ public class ListableFragment extends Fragment {
 //	}
 	
 	@Override
-	public void onStart(){
-		
+	public void onStart(){		
 		super.onStart();
 		list = (ListView) getView().findViewById(R.id.list);
+		if(selectableList){
+			list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			list.setOnItemClickListener(new OnItemClickListener(){
+				@Override
+				public void onItemClick(AdapterView<?> arg0, View view, int pos, long id) {
+					list.setSelection(pos);
+				}
+			});	
+		}
 		list.setAdapter(mAdapter);
+		
 	}
 	
 	@Override
