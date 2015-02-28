@@ -83,6 +83,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team.artyukh.project.HomeActivity" />
         </activity>
+        <activity
+            android:name=".FriendsActivity"
+            android:label="@string/title_activity_friends"
+            android:parentActivityName=".HomeActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.HomeActivity" />
+        </activity>
     </application>
 
 </manifest>
