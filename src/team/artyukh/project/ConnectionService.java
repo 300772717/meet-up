@@ -18,6 +18,7 @@ import team.artyukh.project.lists.IListable;
 import team.artyukh.project.messages.client.ImageDownloadRequest;
 import team.artyukh.project.messages.client.InviteRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
+import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
@@ -135,6 +136,16 @@ public class ConnectionService extends Service {
 		}
 	}
 	
+	private void updateFriends(FriendIdUpdate message){
+		JSONArray friends = new JSONArray();
+		for (String friendId : message.getFriendIds()){
+			friends.put(friendId);
+		}
+		
+		BindingActivity.setPref(BindingActivity.PREF_FRIENDS, friends.toString());
+		Log.i("FRIENDS", friends.toString());
+	}
+	
 	private void checkImageFile(String objId, String picDate){
 		File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), objId + "-" + picDate);
 //		Log.i("CHECKING FILE", objId + "-" + picDate);
@@ -199,12 +210,12 @@ public class ConnectionService extends Service {
 //				applyUpdate(new InviteUpdate(msgObj));
 			} else if (type.equals("newgroup")) {
 				updateGroupMembers(new GroupUpdate(msgObj));
-			}
-			else if(type.equals("imagedownload")) {
+			} else if(type.equals("imagedownload")) {
 				saveImageFile(new ImageDownloadUpdate(msgObj));
-			}
-			else if(type.equals("search")){
+			} else if(type.equals("search")){
 				checkSearchImages(new SearchUpdate(msgObj));
+			} else if(type.equals("friendidupdate")){
+				updateFriends(new FriendIdUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {

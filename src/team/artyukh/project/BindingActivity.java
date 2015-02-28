@@ -9,6 +9,7 @@ import team.artyukh.project.ConnectionService.ServiceBinder;
 import team.artyukh.project.messages.client.InviteRequest;
 import team.artyukh.project.messages.client.NewGroupRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
+import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.InviteUpdate;
@@ -46,7 +47,7 @@ import android.widget.TextView;
 public abstract class BindingActivity extends FragmentActivity {
 	
 	private static final String PREFS_FILE = "team.artyukh.project.PREFS_FILE";
-	static SharedPreferences data;
+	private static SharedPreferences data;
 	public static final String PREF_USER_ID = "USER_ID";
 	public static final String PREF_LAT = "PREF_LAT";
 	public static final String PREF_LON = "PREF_LON";
@@ -56,6 +57,7 @@ public abstract class BindingActivity extends FragmentActivity {
 	public static final String PREF_GROUP = "GROUP";
 	public static final String PREF_GROUP_MEMBERS = "GROUP_MEMBERS";
 	public static final String PREF_CHAT = "CHAT";
+	public static final String PREF_FRIENDS = "FRIENDS";
 	static final String PREF_PHONE_NUMBER = "PHONE_NUMBER";
 	private BroadcastReceiver receiver;
 	private ConnectionService connService;
@@ -171,6 +173,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ImageDownloadUpdate(msgObj));
 			} else if (type.equals("viewprofile")){
 				applyUpdate(new ViewProfileUpdate(msgObj));
+			} else if(type.equals("friendidupdate")){
+				applyUpdate(new FriendIdUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -237,6 +241,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(ViewProfileUpdate message){
+		
+	}
+	
+	protected void applyUpdate(FriendIdUpdate message){
 		
 	}
 	
