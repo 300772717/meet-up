@@ -16,7 +16,8 @@ public class MapUpdate {
 	public MapUpdate(JSONObject mapUpdate){
 		try {
 			people = getObjList(mapUpdate.getJSONArray("people"), "person");
-//			markers = getObjList(mapUpdate.getJSONArray("markers"), "marker");
+			markers = getObjList(mapUpdate.getJSONArray("markers"), "marker");
+			Log.i("MRKARR", mapUpdate.getJSONArray("markers").toString());
 		} catch (JSONException e) {
 		}
 	}

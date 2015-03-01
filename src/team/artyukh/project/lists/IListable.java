@@ -7,7 +7,7 @@ public interface IListable {
 	
 	public String getTitle();
 	public String getBody();
-	public String getType();
+	public int getType();
 	public String getId();
 	public String getImageDate();
 }

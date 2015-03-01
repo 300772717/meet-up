@@ -14,10 +14,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import team.artyukh.project.BindingActivity;
 import team.artyukh.project.R;
 import team.artyukh.project.messages.client.SearchRequest;
+import team.artyukh.project.messages.client.SetMarkerRequest;
 import team.artyukh.project.messages.server.MapObject;
 import team.artyukh.project.messages.server.MapUpdate;
 import android.location.Location;
@@ -44,6 +46,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	private final double EARTH_RAD = 6371;
 	private final double BOX_SIZE = 10;
 	private ArrayList<MapObject> people = new ArrayList<MapObject>();
+	private ArrayList<MapObject> markers = new ArrayList<MapObject>();
 	private BindingActivity parent;
 	private SupportMapFragment mainFrag;
 	private Thread requestThread;
@@ -90,8 +93,9 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	}
 	
 	@Override
-	public void onMapLongClick(LatLng loc) {
-    	float[] dist = new float[3];
+	public void onMapLongClick(final LatLng loc) {
+    	boolean inRange = false;
+		float[] dist = new float[3];
     	ArrayList<MapObject> query = new ArrayList<MapObject>();
     	
 		for (MapObject obj : people) {
@@ -100,16 +104,18 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 				query.add(obj);
 			}
 		}
-		if(query.size() == 0) return;
+		if(query.size() > 0) inRange = true;
 		
 		final ArrayList<MapObject> query2 = query;
 		AlertDialog.Builder b = new AlertDialog.Builder(parent);
         b.setTitle("WARNING");
 		b.setMessage("");
-        b.setPositiveButton("Who is here?",
-				new DialogInterface.OnClickListener() {
+		b.setNeutralButton("Place Marker",
+				new DialogInterface.OnClickListener() {				
+					@Override
 					public void onClick(DialogInterface dialog, int id) {
-						parent.send(new SearchRequest(query2).toString());
+						parent.send(new SetMarkerRequest(loc.latitude, loc.longitude).toString());
+						
 					}
 				});
         b.setNegativeButton("Cancel",
@@ -118,6 +124,14 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 						dialog.cancel();
 					}
 				});
+        if(inRange){
+        	b.setPositiveButton("Who is here?",
+    				new DialogInterface.OnClickListener() {
+    					public void onClick(DialogInterface dialog, int id) {
+    						parent.send(new SearchRequest(query2).toString());
+    					}
+    				});
+        }
 
         AlertDialog confirm = b.create();
         confirm.show();
@@ -155,6 +169,13 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
     		.fillColor(Color.RED)
     		.strokeColor(Color.BLACK));;
     	}
+    	
+    	markers = message.getMarkers();
+    	for(MapObject obj : markers){
+    		LatLng spot = obj.getLocation();
+    		map.addMarker(new MarkerOptions()
+    		.position(spot));
+    	}
 	}
 	
   private void requestUpdate(){
@@ -163,6 +184,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	try {
 		reqObj.put("type", "req");
 		reqObj.put("group", group);
+		reqObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
 		reqObj.put("minLat", Math.toDegrees(minLat));
 		reqObj.put("minLon", Math.toDegrees(minLon));
 		reqObj.put("maxLat", Math.toDegrees(maxLat));

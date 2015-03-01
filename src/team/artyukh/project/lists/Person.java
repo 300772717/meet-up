@@ -26,8 +26,8 @@ public class Person implements IListable {
 	}
 
 	@Override
-	public String getType() {
-		return "person";
+	public int getType() {
+		return IListable.LISTABLE_PERSON;
 	}
 
 	@Override

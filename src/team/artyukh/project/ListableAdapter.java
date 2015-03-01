@@ -8,6 +8,9 @@ import org.json.JSONObject;
 
 import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
+import team.artyukh.project.lists.MapMarker;
+import team.artyukh.project.messages.client.HideMarkerRequest;
+import team.artyukh.project.messages.client.SetMarkerRequest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Environment;
@@ -66,12 +69,37 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		holder.title.setText(list.get(pos).getTitle());
 		holder.body.setText(list.get(pos).getBody());
 		
+		if (list.get(pos).getType() == IListable.LISTABLE_PERSON) {
+			holder.one.setText("Profile");
+			holder.two.setText("Invite");
+			holder.one.setOnClickListener(openProfile(pos));
+			holder.two.setOnClickListener(sendInvite(pos));
+		} else if (list.get(pos).getType() == IListable.LISTABLE_MARKER) {
+			holder.icon.setImageResource(R.drawable.icon_marker);
+			if(((MapMarker)list.get(pos)).isCurrent()){
+				holder.one.setText("Hide");
+				holder.one.setOnClickListener(hideMarker(pos));
+			}
+			else{
+				holder.one.setText("Show on Map");
+				holder.one.setOnClickListener(setCurrentMarker(pos));
+			}
+			
+			holder.two.setText("Edit");
+			
+//			MapMarker mm = (MapMarker) list.get(pos);
+			
+		} else {
+			holder.one.setVisibility(View.INVISIBLE);
+			holder.two.setVisibility(View.INVISIBLE);
+		}
+		
 		Bitmap image = bitmapHash.get(list.get(pos).getId());
 		if(image != null){
 			holder.icon.setImageBitmap(image);
 		}
 		else{
-			holder.icon.setImageResource(R.drawable.icon_person);
+//			holder.icon.setImageResource(R.drawable.icon_person);
 			image = BindingActivity.getBitmap(parent.getExternalFilesDir(Environment.DIRECTORY_PICTURES), list.get(pos).getId());
 			if(image != null){
 				bitmapHash.put(list.get(pos).getId(), image);
@@ -84,22 +112,6 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.two.setFocusable(false);
 			row.setBackground(parent.getResources().getDrawable(R.drawable.ilistable_background));
 		}
-		
-		if(list.get(pos).getType().equals("person")){
-			
-			holder.one.setText("Profile");
-			holder.two.setText("Invite");
-			holder.one.setOnClickListener(openProfile(pos));
-			holder.two.setOnClickListener(sendInvite(pos));
-		}
-		else if(list.get(pos).getType().equals("marker")){
-			holder.one.setText("Info");
-			holder.two.setText("Directions");
-		}
-		else{
-			holder.one.setVisibility(View.INVISIBLE);
-			holder.two.setVisibility(View.INVISIBLE);
-		}
 
 		return row;
 	}
@@ -111,6 +123,28 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 	
 	public int getSize(){
 		return list.size();
+	}
+	
+	private OnClickListener setCurrentMarker(final int pos){
+		OnClickListener listener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				parent.send(new SetMarkerRequest(list.get(pos).getId()).toString());
+			}
+		};
+		
+		return listener;
+	}
+	
+	private OnClickListener hideMarker(final int pos){
+		OnClickListener listener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				parent.send(new HideMarkerRequest(list.get(pos).getId()).toString());
+			}
+		};
+		
+		return listener;
 	}
 	
 	private OnClickListener openProfile(final int pos){

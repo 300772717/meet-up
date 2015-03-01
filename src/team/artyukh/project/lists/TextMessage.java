@@ -25,8 +25,8 @@ public class TextMessage implements IListable {
 	}
 
 	@Override
-	public String getType() {
-		return "text";
+	public int getType() {
+		return IListable.LISTABLE_MESSAGE;
 	}
 
 	@Override

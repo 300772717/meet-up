@@ -9,12 +9,42 @@
     tools:context="team.artyukh.project.MyPlacesActivity" >
 
     <RelativeLayout
-        android:id="@+id/myPlaces"
+        android:id="@+id/fragment_container_places"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linlButtons"
+        android:layout_centerHorizontal="true" >
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tvNoPlaces"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" >
+        android:layout_centerVertical="true"
+        android:text="No Locations Saved" />
 
-    </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/linlButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" >
+
+        <Button
+            android:id="@+id/btnRemoveMarker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="removeMarker"
+            android:text="Remove" />
+
+        <Button
+            android:id="@+id/btnSaveMarker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="saveMarker"
+            android:text="Save" />
+    </LinearLayout>
 
 </RelativeLayout>

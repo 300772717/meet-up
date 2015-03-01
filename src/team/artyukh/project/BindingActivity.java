@@ -18,6 +18,7 @@ import team.artyukh.project.messages.server.MapUpdate;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
+import team.artyukh.project.messages.server.ViewMarkersUpdate;
 import team.artyukh.project.messages.server.ViewProfileUpdate;
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -178,6 +179,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new FriendIdUpdate(msgObj));
 			} else if(type.equals("viewfriends")){
 				applyUpdate(new ViewFriendsUpdate(msgObj));
+			} else if(type.equals("viewmarkers")){
+				applyUpdate(new ViewMarkersUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -252,6 +255,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(ViewFriendsUpdate message){
+		
+	}
+	
+	protected void applyUpdate(ViewMarkersUpdate message){
 		
 	}
 	

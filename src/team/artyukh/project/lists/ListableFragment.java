@@ -120,9 +120,17 @@ public class ListableFragment extends Fragment {
 		if(selectableList){
 			list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			list.setOnItemClickListener(new OnItemClickListener(){
+				int previous = -1;
 				@Override
 				public void onItemClick(AdapterView<?> arg0, View view, int pos, long id) {
-					list.setSelection(pos);
+					if (pos == previous) {
+						list.clearChoices();
+						list.requestLayout();
+						previous = -1;
+					} else {
+						list.setSelection(pos);
+						previous = pos;
+					}
 				}
 			});	
 		}
