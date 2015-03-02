@@ -7,24 +7,35 @@ mongoose.connect('mongodb://localhost/droidBase');
 var db = mongoose.connection;
 var schema;
 var profileImageModel;
-var idModel;
-var groupModel;
+var idModel, markerModel, groupModel;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
 	
+	var markerSchema = new mongoose.Schema(
+	{title: {type: String, default: 'No Title'},
+	description: {type: String, default: 'No Description'},
+	loc: {type: [Number], index: '2dsphere'},
+	picDate: {type: String, default: ''},
+	current: {type: Boolean, default: false},
+	saved: {type: Boolean, default: false}});
+	markerModel = mongoose.model('Markers', markerSchema);
+	
 	schema = new mongoose.Schema(
-		{username: String, password: String, 
-		status: {type: String, default: 'No Status'}, 
-		phone: String,
-		picDate: {type: String, default: ''}, 
-		group: {type: String, default: ''}, 
-		lat: {type: Number, default: 0}, 
-		lon: {type: Number, default: 0},
-		friends: {type: Array}});
-	idModel = mongoose.model('Id', schema);	
+	{username: String,
+	password: String, 
+	status: {type: String, default: 'No Status'}, 
+	phone: String,
+	picDate: {type: String, default: ''}, 
+	group: {type: String, default: ''}, 
+	lat: {type: Number, default: 0}, 
+	lon: {type: Number, default: 0},
+	friends: {type: Array},
+	markers: [markerSchema]});
+	idModel = mongoose.model('Id', schema);
+	
 	schema = new mongoose.Schema({group_id: String});
-	groupModel = mongoose.model("Group", schema);
+	groupModel = mongoose.model('Group', schema);
 });
 
 wss.on('connection', function(ws) {
@@ -55,22 +66,7 @@ wss.on('connection', function(ws) {
 					checkUpd);
 				break;
 			case 'req':
-				var query;
-				if(data.group == ''){
-					query = idModel
-					.where('lat').gte(data.minLat)
-					.where('lat').lte(data.maxLat)
-					.where('lon').gte(data.minLon)
-					.where('lon').lte(data.maxLon)
-					.select('id lat lon');
-				}
-				else{
-					query = idModel
-						.where('group').equals(data.group)
-						.select('id lat lon');
-				}
-				
-				mapQuery(query, ws, data.type);
+				mapQuery(data, ws);
 				break;
 			case 'search':
 				searchQuery(data, ws);
@@ -114,6 +110,21 @@ wss.on('connection', function(ws) {
 			case 'viewfriends':
 				sendFriendList(data, ws);
 				break;
+			case 'setmarker':
+				setMarker(data, ws);
+				break;
+			case 'hidemarker':
+				hideMarker(data, ws);
+				break;
+			case 'removemarker':
+				removeMarker(data, ws);
+				break;
+			case 'savemarker':
+				saveMarker(data, ws);
+				break;
+			case 'viewmarkers':
+				viewPlaces(data, ws);
+				break;
 		}
 		
 	});
@@ -155,20 +166,69 @@ function searchQuery(data, socket){
 	});
 }
 
-function findNearBy(data, socket){
-	
-}
-
-function mapQuery(query, socket, type){
+function mapQuery(data, socket){
+	var query;
+	if(data.group === ''){
+		query = idModel
+		.where('lat').gte(data.minLat)
+		.where('lat').lte(data.maxLat)
+		.where('lon').gte(data.minLon)
+		.where('lon').lte(data.maxLon)
+		.select('id lat lon');
+	}
+	else{
+		query = idModel
+			.where('group').equals(data.group)
+			.select('id lat lon')
+			.select({markers: {$elemMatch: {current: true}}});
+	}
 	query.exec(function(err, arr){
 		if(!err){
 			var response = {};
-			response.type = type;
+			response.type = 'req';
 			response.people = [].concat(arr);
+			response.markers = [];
+			if(data.group === ''){
+				idModel.findOne()
+				.where('username').equals(data.username)
+				.select({markers: {$elemMatch: {current: true}}})
+				.exec(function(err, doc){
+					if(doc.markers[0]){
+						response.markers.push(formMarker(doc.markers[0]));
+					}
+					socket.send(JSON.stringify(response));
+				});
+			}
+			else{
+				for(var i = 0; i < arr.length; i++){
+					// console.log(arr[i]);
+					if(!arr[i].markers) continue;
+					if(arr[i].markers[0]){
+						response.markers.push(formMarker(arr[i].markers[0]));
+					}
+					// var marker = arr[i].markers[0];
+					// if(marker){
+						// var mrk = {};
+						// mrk._id = marker.id;
+						// mrk.lon = marker.loc[0];
+						// mrk.lat = marker.loc[1];
+						// response.markers.push(mrk);
+					// }
+				}
 			
-			socket.send(JSON.stringify(response));
+				socket.send(JSON.stringify(response));
+			}
 		}
 	});
+}
+
+function formMarker(marker){
+	var mrk = {};
+	mrk._id = marker.id;
+	mrk.lon = marker.loc[0];
+	mrk.lat = marker.loc[1];
+	
+	return mrk;
 }
 
 function broadcastChat(data){
@@ -535,7 +595,137 @@ function sendFriendList(data, socket){
 			});
 		}
 	});
+}
+
+function setMarker(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			
+			doc.markers.filter(function(mrk){
+				if(data.markerid && mrk.id === data.markerid){
+					mrk.current = true;
+				}else{
+					mrk.current = false;
+				}
+				
+				if(mrk.saved === false){
+					mrk.remove();
+				}
+			});
+			
+			doc.save(function(err, newdoc){
+				if(!data.markerid){
+					var marker = {};
+					marker.loc = [data.lon, data.lat];
+					marker.current = true;
+				
+					newdoc.save(function(err, doc){
+						doc.markers.push(marker);
+						doc.save();
+					});
+					
+					mapQuery(data, socket);
+				}
+				else{
+					data.type = 'viewmarkers';
+					viewPlaces(data, socket);
+				}
+			});
+		}
+	});
+}
+
+function viewPlaces(data, socket){
+	var response = {};
+	response.type = data.type;
+	response.markers = [];
 	
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			doc.markers.forEach(function(marker){
+				var mrk = {};
+				mrk.id = marker.id;
+				mrk.title = marker.title;
+				mrk.description = marker.description;
+				mrk.picDate = marker.picDate;
+				mrk.current = marker.current;
+				mrk.saved = marker.saved;
+				mrk.current = marker.current;
+				
+				response.markers.push(mrk);
+			});
+			
+			socket.send(JSON.stringify(response));
+		}
+	});
+}
+
+function saveMarker(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			doc.markers.filter(function(mrk){
+				if(mrk.id === data.id){
+					mrk.saved = true;
+					doc.save(function(){
+						data.type = 'viewmarkers';
+						viewPlaces(data, socket);
+					});
+					return;
+				}
+			});
+		}
+	});
+}
+
+function removeMarker(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			doc.markers.filter(function(mrk){
+				if(mrk.id === data.id){
+					mrk.remove();
+					doc.save(function(){
+						data.type = 'viewmarkers';
+						viewPlaces(data, socket);
+					});
+					
+					return;
+				}
+			});
+		}
+	});
+}
+
+function hideMarker(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			doc.markers.filter(function(mrk){
+				if(mrk.id === data.id){
+					mrk.current = false;
+					doc.save(function(){
+						data.type = 'viewmarkers';
+						viewPlaces(data, socket);
+					});
+					
+					return;
+				}
+			});
+		}
+	});
 }
 
 function checkUpd(err, upd){
