@@ -101,7 +101,6 @@ int drawable icon_person 0x7f020021
 int drawable ilistable_background 0x7f020022
 int drawable powered_by_google_dark 0x7f020023
 int drawable powered_by_google_light 0x7f020024
-int drawable youfoundthemonkey 0x7f020025
 int id LinearLayout1 0x7f070050
 int id RelativeLayout1 0x7f070031
 int id RelativeLayoutLocations 0x7f07004a
