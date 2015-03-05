@@ -1,6 +1,7 @@
 package team.artyukh.project.fragments;
 
 import java.lang.reflect.Field;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +11,7 @@ import team.artyukh.project.ListableAdapter;
 import team.artyukh.project.R;
 import team.artyukh.project.lists.ListableFragment;
 import team.artyukh.project.lists.TextMessage;
+import team.artyukh.project.messages.client.ChatRequest;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -31,21 +33,9 @@ public class ChatFragment extends Fragment implements OnClickListener {
 	private EditText et;
 	private BindingActivity parent;
 	
-	public void sendMessage(){
-		
-		JSONObject chatObj = new JSONObject();
-		
-		try {
-			chatObj.put("type", "chat");
-			chatObj.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
-			chatObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-			chatObj.put("message", et.getText().toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
+	public void sendMessage(){	
+		parent.send(new ChatRequest(et.getText().toString()).toString());
 		et.setText("");
-		parent.send(chatObj.toString());
 	}
 	
 	public void restoreChat(){

@@ -18,6 +18,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import team.artyukh.project.BindingActivity;
 import team.artyukh.project.R;
+import team.artyukh.project.messages.client.MapRequest;
+import team.artyukh.project.messages.client.MyPositionRequest;
 import team.artyukh.project.messages.client.SearchRequest;
 import team.artyukh.project.messages.client.SetMarkerRequest;
 import team.artyukh.project.messages.server.MapObject;
@@ -140,20 +142,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	}
 	
 	private void updateMyLocation() {
-
-		JSONObject locObj = new JSONObject();
-
-		try {
-			locObj.put("type", "id");
-			locObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-			locObj.put("phone", phone);
-			locObj.put("lat", myLoc.latitude);
-			locObj.put("lon", myLoc.longitude);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		parent.send(locObj.toString());
+		parent.send(new MyPositionRequest(myLoc.longitude, myLoc.latitude).toString());
 	}
 	
 	public void updateMap(MapUpdate message){
@@ -178,22 +167,10 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
     	}
 	}
 	
-  private void requestUpdate(){
-	JSONObject reqObj = new JSONObject();
-	String group = BindingActivity.getStringPref(BindingActivity.PREF_GROUP);
-	try {
-		reqObj.put("type", "req");
-		reqObj.put("group", group);
-		reqObj.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-		reqObj.put("minLat", Math.toDegrees(minLat));
-		reqObj.put("minLon", Math.toDegrees(minLon));
-		reqObj.put("maxLat", Math.toDegrees(maxLat));
-		reqObj.put("maxLon", Math.toDegrees(maxLon));
-	} catch (JSONException e) {
+	private void requestUpdate() {
+		//THE REQUEST CONSTRUCTOR TAKES RADIAN ANGLES
+		parent.send(new MapRequest(minLat, minLon, maxLat, maxLon).toString());
 	}
-
-	parent.send(reqObj.toString());
-}
 	
 	@Override
 	public void onMapReady(GoogleMap m) {
