@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import team.artyukh.project.ConnectionService.ServiceBinder;
 import team.artyukh.project.messages.client.InviteRequest;
 import team.artyukh.project.messages.client.NewGroupRequest;
+import team.artyukh.project.messages.client.UpdateGroupRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
 import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
@@ -263,17 +264,7 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	private void joinGroup(String groupId){
-		JSONObject joinObj = new JSONObject();
-		
-		try {
-			joinObj.put("type", "updategroup");
-			joinObj.put("username", getStringPref(PREF_USERNAME));
-			joinObj.put("group", groupId);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		send(joinObj.toString());
+		send(new UpdateGroupRequest(groupId).toString());
 	}
 	
 	public void send(String message){
@@ -287,10 +278,6 @@ public abstract class BindingActivity extends FragmentActivity {
 			connService.send(image);
 		}
 	}
-	
-//	protected void sendPendingInvite(String invite){
-//		connService.addPendingInvite(invite);
-//	}
 	
 	protected void sendInvite(String username){
 		InviteRequest invite = new InviteRequest(username);

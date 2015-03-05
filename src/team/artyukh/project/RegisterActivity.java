@@ -3,6 +3,7 @@ package team.artyukh.project;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import team.artyukh.project.messages.client.RegisterRequest;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +33,6 @@ public class RegisterActivity extends BindingActivity {
 	}
 	
 	public void register(View v){
-		JSONObject regObj = new JSONObject();
 		EditText usr = (EditText) findViewById(R.id.etNewUsername);
 		EditText pass = (EditText) findViewById(R.id.etNewPassword);
 		EditText passRep = (EditText) findViewById(R.id.etNewPasswordRepeat);
@@ -42,15 +42,7 @@ public class RegisterActivity extends BindingActivity {
 			return;
 		}
 		
-		try {
-			regObj.put("type", "register");
-			regObj.put("username", usr.getText().toString());
-			regObj.put("password", pass.getText().toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		send(regObj.toString());
+		send(new RegisterRequest(usr.getText().toString(), pass.getText().toString()).toString());
 	}
 
 	@Override

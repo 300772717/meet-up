@@ -81,38 +81,6 @@ public class ListableFragment extends Fragment {
 		list.setSelectionFromTop(index, top);
 	}
 	
-//	public void updateImage(String title, String encodedImage){
-//		ArrayList<Integer> index = new ArrayList<Integer>();
-//		
-//		for(int i = 0; i < mAdapter.getSize(); i++){
-//			IListable item = mAdapter.getItem(i);
-//			if(item.getTitle().equals(title)){
-//				index.add(i);
-//			}
-//		}
-//		int first = list.getFirstVisiblePosition();
-//	    int last = first + list.getChildCount() - 1;
-//	    View rowView = new View(mParent);
-//	    
-//	    for(int pos : index){
-//	    	if (pos < first || pos > last ) {
-//	    		rowView = list.getAdapter().getView(pos, null, list);
-//		    } else {
-//		        int childIndex = pos - first;
-//		        rowView = list.getChildAt(childIndex);
-//		    }
-//	    }
-//	    
-//	    ListableAdapter.ViewHolder holder = (ViewHolder) rowView.getTag();
-//	    try {
-//			byte[] data = Base64.decode(encodedImage);
-//			Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
-//			holder.icon.setImageBitmap(image);
-//		} catch (IOException e) {
-//
-//		}
-//	}
-	
 	@Override
 	public void onStart(){		
 		super.onStart();

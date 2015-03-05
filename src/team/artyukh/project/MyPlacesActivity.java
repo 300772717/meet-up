@@ -1,6 +1,5 @@
 package team.artyukh.project;
 
-import team.artyukh.project.fragments.SavedLocationsFragment;
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.ListableFragment;
 import team.artyukh.project.messages.client.RemoveMarkerRequest;
