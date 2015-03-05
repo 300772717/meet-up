@@ -3,6 +3,7 @@ package team.artyukh.project;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import team.artyukh.project.messages.client.LoginRequest;
 import team.artyukh.project.messages.server.LoginUpdate;
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,22 +35,13 @@ public class LoginActivity extends BindingActivity {
 	}
 	
 	public void login(View v){
-		JSONObject loginObj = new JSONObject();
 		EditText usr = (EditText) findViewById(R.id.etUsername);
 		EditText pass = (EditText) findViewById(R.id.etPassword);
 		
 		username = usr.getText().toString();
 		password = pass.getText().toString();
-		
-		try {
-			loginObj.put("type", "login");
-			loginObj.put("username", username);
-			loginObj.put("password", password);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		send(loginObj.toString());
+						
+		send(new LoginRequest(username, password).toString());
 	}
 	
 	public void register(View v){
