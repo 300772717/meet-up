@@ -33,9 +33,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 
 
 public class MapViewFragment extends Fragment implements OnMapClickListener, OnMapReadyCallback, OnMapLongClickListener {
@@ -43,6 +46,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	private GoogleMap map;
 	private boolean mapLoaded = false;
 	private double minLat, minLon, maxLat, maxLon;
+	private CheckBox chkFriends, chkGroup, chkNearby;
 	private LatLng myLoc;
 	private String phone;
 	private final double EARTH_RAD = 6371;
@@ -169,7 +173,16 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	
 	private void requestUpdate() {
 		//THE REQUEST CONSTRUCTOR TAKES RADIAN ANGLES
-		parent.send(new MapRequest(minLat, minLon, maxLat, maxLon).toString());
+		boolean getFriends, getGroup, getNearby;
+		getFriends = chkFriends.isChecked();
+		getGroup = chkGroup.isChecked();
+		getNearby = chkNearby.isChecked();
+		
+		parent.send(new MapRequest(getFriends, getGroup, getNearby, minLat, minLon, maxLat, maxLon).toString());
+	}
+	
+	public void checkClick(View v){
+		
 	}
 	
 	@Override
@@ -220,9 +233,49 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
     	FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container_map, mainFrag).commit();
         
-        
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        View root = inflater.inflate(R.layout.fragment_map, container, false);
+        		
+		chkFriends = (CheckBox) root.findViewById(R.id.cbFriends);
+		chkGroup = (CheckBox) root.findViewById(R.id.cbGroup);
+		chkNearby = (CheckBox) root.findViewById(R.id.cbNearby);
+		
+		chkFriends.setChecked(getCheckedPref(BindingActivity.PREF_FILT_FRIENDS));
+		chkGroup.setChecked(getCheckedPref(BindingActivity.PREF_FILT_GROUP));
+		chkNearby.setChecked(getCheckedPref(BindingActivity.PREF_FILT_NEARBY));
+		
+		chkFriends.setOnClickListener(checkBoxListener);
+		chkGroup.setOnClickListener(checkBoxListener);
+		chkNearby.setOnClickListener(checkBoxListener);
+
+        return root;
 	}
+	
+	private boolean getCheckedPref(String key){
+		String checked = BindingActivity.getStringPref(key);	
+		return Boolean.parseBoolean(checked);
+	}
+	
+	OnClickListener checkBoxListener = new OnClickListener(){
+
+		@Override
+		public void onClick(View v) {
+			CheckBox cb = (CheckBox) v;
+			String status = String.valueOf(cb.isChecked());
+			Log.i("CHECKED", status);
+			switch(v.getId()){
+			case R.id.cbFriends:
+				BindingActivity.setPref(BindingActivity.PREF_FILT_FRIENDS, status);
+				break;
+			case R.id.cbGroup:
+				BindingActivity.setPref(BindingActivity.PREF_FILT_GROUP, status);
+				break;
+			case R.id.cbNearby:
+				BindingActivity.setPref(BindingActivity.PREF_FILT_NEARBY, status);
+				break;
+			}
+		}
+		
+	};
 	
 	@Override
 	public void onDestroyView(){

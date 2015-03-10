@@ -1,6 +1,8 @@
 var WebSocketServer = require('ws').Server
 , wss = new WebSocketServer({port: 2222});
 
+var async = require('async');
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/droidBase');
 
@@ -25,7 +27,6 @@ db.once('open', function (callback) {
 	{username: String,
 	password: String, 
 	status: {type: String, default: 'No Status'}, 
-	phone: String,
 	picDate: {type: String, default: ''}, 
 	group: {type: String, default: ''}, 
 	lat: {type: Number, default: 0}, 
@@ -167,58 +168,81 @@ function searchQuery(data, socket){
 }
 
 function mapQuery(data, socket){
-	var query;
-	if(data.group === ''){
-		query = idModel
-		.where('lat').gte(data.minLat)
-		.where('lat').lte(data.maxLat)
-		.where('lon').gte(data.minLon)
-		.where('lon').lte(data.maxLon)
-		.select('id lat lon');
-	}
-	else{
-		query = idModel
-			.where('group').equals(data.group)
-			.select('id lat lon')
-			.select({markers: {$elemMatch: {current: true}}});
-	}
-	query.exec(function(err, arr){
-		if(!err){
-			var response = {};
-			response.type = 'req';
-			response.people = [].concat(arr);
-			response.markers = [];
-			if(data.group === ''){
-				idModel.findOne()
-				.where('username').equals(data.username)
-				.select({markers: {$elemMatch: {current: true}}})
-				.exec(function(err, doc){
-					if(doc.markers[0]){
-						response.markers.push(formMarker(doc.markers[0]));
-					}
-					socket.send(JSON.stringify(response));
-				});
-			}
-			else{
-				for(var i = 0; i < arr.length; i++){
-					// console.log(arr[i]);
-					if(!arr[i].markers) continue;
-					if(arr[i].markers[0]){
-						response.markers.push(formMarker(arr[i].markers[0]));
-					}
-					// var marker = arr[i].markers[0];
-					// if(marker){
-						// var mrk = {};
-						// mrk._id = marker.id;
-						// mrk.lon = marker.loc[0];
-						// mrk.lat = marker.loc[1];
-						// response.markers.push(mrk);
-					// }
-				}
-			
-				socket.send(JSON.stringify(response));
+	var response = {};
+	response.type = 'req';
+	response.people = [];
+	response.markers = [];
+	var functCalls = [];
+	
+	var usrquery = idModel.findOne()
+		.where('username').equals(data.username)
+		.select('id lat lon friends')
+		.select({markers: {$elemMatch: {current: true}}});
+	
+	usrquery.exec(function(err, doc){
+		if(data.group === '' || data.getgroup === false){
+			response.people.push({_id: doc.id, lat: doc.lat, lon: doc.lon});
+			if(doc.markers[0]){
+				response.markers.push(formMarker(doc.markers[0]));
 			}
 		}
+		
+		if (data.getfriends === true){
+			var friendquery = idModel.find()
+					.where('_id').in(doc.friends)
+					.select('id lat lon');
+					
+			functCalls.push(function(callback){		
+				friendquery.exec(function(err, docs){
+					response.people = response.people.concat(docs);
+					// console.log("FRIENDS");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		if(data.getgroup === true && data.group !== ''){
+			var groupquery = idModel.find()
+					.where('group').equals(data.group)
+					.select('id lat lon')
+					.select({markers: {$elemMatch: {current: true}}});
+					
+			functCalls.push(function(callback){		
+				groupquery.exec(function(err, docs){
+					docs.forEach(function(member){
+						response.people.push({_id: member.id, lat: member.lat, lon: member.lon});
+						if(!member.markers) return;
+						if(member.markers[0]){
+							response.markers.push(formMarker(member.markers[0]));
+						}
+					});
+					// console.log("GROUP");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		if(data.getnearby === true){
+			var nearbyquery = idModel.find()
+			.where('lat').gte(data.minLat)
+			.where('lat').lte(data.maxLat)
+			.where('lon').gte(data.minLon)
+			.where('lon').lte(data.maxLon)
+			.select('id lat lon');
+			
+			functCalls.push(function(callback){
+				nearbyquery.exec(function(err, docs){
+					response.people = response.people.concat(docs);
+					// console.log("NEARBY");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		
+		async.parallel(functCalls, function(err, result){
+			socket.send(JSON.stringify(response));
+		});
 	});
 }
 

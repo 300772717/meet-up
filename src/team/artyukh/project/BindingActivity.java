@@ -54,6 +54,9 @@ public abstract class BindingActivity extends FragmentActivity {
 	public static final String PREF_USER_ID = "USER_ID";
 	public static final String PREF_LAT = "PREF_LAT";
 	public static final String PREF_LON = "PREF_LON";
+	public static final String PREF_FILT_FRIENDS = "PREF_FILT_FRIENDS";
+	public static final String PREF_FILT_GROUP = "PREF_FILT_GROUP";
+	public static final String PREF_FILT_NEARBY = "PREF_FILT_NEARBY";
 	public static final String PREF_USERNAME = "USERNAME";
 	public static final String PREF_PASSWORD = "PASSWORD";
 	public static final String PREF_STATUS = "STATUS";
@@ -131,7 +134,7 @@ public abstract class BindingActivity extends FragmentActivity {
 	    }
 	}
 	
-	protected static void setPref(String key, String value){
+	public static void setPref(String key, String value){
 		data.edit().putString(key, value).apply();
 		
 	}

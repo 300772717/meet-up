@@ -8,7 +8,7 @@ import team.artyukh.project.BindingActivity;
 public class MapRequest {
 	JSONObject request = new JSONObject();
 
-	public MapRequest(double minLat, double minLon, double maxLat, double maxLon) {
+	public MapRequest(boolean getFriends, boolean getGroup, boolean getNearby, double minLat, double minLon, double maxLat, double maxLon) {
 		try {
 			request.put("type", "req");
 			request.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
@@ -17,6 +17,9 @@ public class MapRequest {
 			request.put("minLon", Math.toDegrees(minLon));
 			request.put("maxLat", Math.toDegrees(maxLat));
 			request.put("maxLon", Math.toDegrees(maxLon));
+			request.put("getfriends", getFriends);
+			request.put("getgroup", getGroup);
+			request.put("getnearby", getNearby);
 		} catch (JSONException e) {
 		}
 
