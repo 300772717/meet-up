@@ -69,12 +69,14 @@ public class MyPlacesActivity extends BindingActivity {
 	public void saveMarker(View v){
 		//ADD CONDITIONAL BASED ON ILISTABLE GET STATUS
 		int position = mainFrag.getSelectedItemPosition();
+		if(position < 0) return;
 		IListable marker = mainFrag.getAdapter().getItem(position);
 		send(new SaveMarkerRequest(marker.getId()).toString());
 	}
 	
 	public void removeMarker(View v){
 		int position = mainFrag.getSelectedItemPosition();
+		if(position < 0) return;
 		IListable marker = mainFrag.getAdapter().getItem(position);
 		send(new RemoveMarkerRequest(marker.getId()).toString());
 	}

@@ -2,6 +2,7 @@ package team.artyukh.project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,8 @@ import android.widget.TextView;
 public class ListableAdapter extends ArrayAdapter<IListable> {
 	
 	private BindingActivity parent;
-	private final ArrayList<IListable> list;
+	private ArrayList<IListable> list = new ArrayList<IListable>();
+	private ArrayList<IListable> mainList = new ArrayList<IListable>();
 	private static HashMap<String, Bitmap> bitmapHash = new HashMap<String, Bitmap>();
 	private boolean select = false;
 	static class ViewHolder {
@@ -42,7 +44,10 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		super(context, R.layout.rowview_listable, list);
 		
 		this.parent = context;
-		this.list = list;
+		if(list != null){
+			this.list = list;
+			this.mainList.addAll(list);
+		}
 		this.select = selectable;
 	}
 	
@@ -65,6 +70,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		}
 
 		ViewHolder holder = (ViewHolder) row.getTag();
+		int drawable = R.drawable.icon_person;
 		
 		holder.title.setText(list.get(pos).getTitle());
 		holder.body.setText(list.get(pos).getBody());
@@ -75,7 +81,8 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.one.setOnClickListener(openProfile(pos));
 			holder.two.setOnClickListener(sendInvite(pos));
 		} else if (list.get(pos).getType() == IListable.LISTABLE_MARKER) {
-			holder.icon.setImageResource(R.drawable.icon_marker);
+//			holder.icon.setImageResource(R.drawable.icon_marker);
+			drawable = R.drawable.icon_marker;
 			if(((MapMarker)list.get(pos)).isCurrent()){
 				holder.one.setText("Hide");
 				holder.one.setOnClickListener(hideMarker(pos));
@@ -87,8 +94,6 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			
 			holder.two.setText("Edit");
 			
-//			MapMarker mm = (MapMarker) list.get(pos);
-			
 		} else {
 			holder.one.setVisibility(View.INVISIBLE);
 			holder.two.setVisibility(View.INVISIBLE);
@@ -99,14 +104,15 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.icon.setImageBitmap(image);
 		}
 		else{
-//			holder.icon.setImageResource(R.drawable.icon_person);
 			image = BindingActivity.getBitmap(parent.getExternalFilesDir(Environment.DIRECTORY_PICTURES), list.get(pos).getId());
 			if(image != null){
 				bitmapHash.put(list.get(pos).getId(), image);
 				holder.icon.setImageBitmap(image);
-			}		
+			}
+			else{
+				holder.icon.setImageResource(drawable);
+			}
 		}
-//		Log.i("HASH SIZE", bitmapHash.size() + "");
 		if(select){
 			holder.one.setFocusable(false);
 			holder.two.setFocusable(false);
@@ -123,6 +129,21 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 	
 	public int getSize(){
 		return list.size();
+	}
+	
+	public void filter(String filter){
+		list.clear();
+		if (filter.length() == 0) {
+			list.addAll(mainList);
+			
+		} else {
+			for (IListable il : mainList) {
+				if (il.getTitle().toLowerCase(Locale.getDefault()).contains(filter)) {
+					list.add(il);
+				}
+			}
+		}
+		notifyDataSetChanged();
 	}
 	
 	private OnClickListener setCurrentMarker(final int pos){

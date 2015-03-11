@@ -22,6 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/btnRemoveFriend"
+        android:layout_below="@+id/etFriendFilter"
         android:layout_centerHorizontal="true" >
 
     </RelativeLayout>
@@ -33,5 +34,17 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:text="You Have No Friends" />
+
+    <EditText
+        android:id="@+id/etFriendFilter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:ems="10"
+        android:hint="Filter by Username" >
+
+        <requestFocus />
+    </EditText>
 
 </RelativeLayout>
