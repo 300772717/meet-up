@@ -63,6 +63,7 @@ public abstract class BindingActivity extends FragmentActivity {
 	public static final String PREF_USERNAME = "USERNAME";
 	public static final String PREF_PASSWORD = "PASSWORD";
 	public static final String PREF_STATUS = "STATUS";
+	public static final String PREF_APPEAR_OFFLINE = "PREF_APPEAR_OFFLINE";
 	public static final String PREF_GROUP = "GROUP";
 	public static final String PREF_GROUP_MEMBERS = "GROUP_MEMBERS";
 	public static final String PREF_CHAT = "CHAT";

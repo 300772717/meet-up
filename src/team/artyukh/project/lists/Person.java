@@ -7,12 +7,14 @@ public class Person implements IListable {
 	private String status;
 	private String id;
 	private String picDate;
+	private boolean online;
 	
-	public Person(String userName, String statusMessage, String userId, String date){
+	public Person(String userName, String statusMessage, String userId, String date, String online){
 		this.username = userName;
 		this.status = statusMessage;
 		this.id = userId;
 		this.picDate = date;
+		this.online = Boolean.parseBoolean(online);
 	}
 	
 	@Override
@@ -38,6 +40,10 @@ public class Person implements IListable {
 	@Override
 	public String getImageDate() {
 		return picDate;
+	}
+	
+	public boolean isOnline(){
+		return online;
 	}
 
 }

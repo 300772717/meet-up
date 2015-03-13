@@ -20,11 +20,12 @@ public class ViewFriendsUpdate {
 
 			for (int i = 0; i < friends.length(); i++) {
 				String username = friends.getJSONObject(i).getString("username");
-				String id = friends.getJSONObject(i).getString("_id");
+				String id = friends.getJSONObject(i).getString("id");
 				String status = friends.getJSONObject(i).getString("status");
 				String profilePicDate = friends.getJSONObject(i).getString("picDate");
+				String online = friends.getJSONObject(i).getString("online");
 
-				friendList.add(new Person(username, status, id, profilePicDate));
+				friendList.add(new Person(username, status, id, profilePicDate, online));
 			}
 		} catch (JSONException e) {
 			Log.i("VIEW_FRIEND_EX", e.toString());

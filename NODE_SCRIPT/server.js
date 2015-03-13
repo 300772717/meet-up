@@ -38,7 +38,9 @@ db.once('open', function (callback) {
 	lon: {type: Number, default: 0},
 	friends: {type: Array},
 	friendCats: [friendCatSchema],
-	markers: [markerSchema]});
+	markers: [markerSchema],
+	appearOffline: {type: Boolean, default: false},
+	online: {type: Boolean, default: false}});
 	idModel = mongoose.model('Id', schema);
 	
 	schema = new mongoose.Schema({group_id: String});
@@ -65,12 +67,7 @@ wss.on('connection', function(ws) {
 		
 		switch(data.type){
 			case 'id':
-				//ws.username = data.username;
-				idModel.update(
-					{username: data.username},
-					{ $set: data},
-					{upsert: true},
-					checkUpd);
+				modifyProfile(data, ws);
 				break;
 			case 'req':
 				mapQuery(data, ws);
@@ -156,6 +153,10 @@ wss.on('connection', function(ws) {
 		}
 		
 	});
+	
+	ws.on('close', function(){
+		setOnlineFlags();
+	});
 });
 
 function processQuery(query, socket, type){
@@ -171,13 +172,32 @@ function processQuery(query, socket, type){
 	});
 }
 
+function modifyProfile(data, socket){
+	idModel.findOneAndUpdate({username: data.username}, {$set: data})
+	.exec(function(err, doc){
+		sendProfileInfo(doc, socket);
+		if(data.group && data.group != ''){
+			sendMemberList(data.group, socket);
+		}
+	});
+}
+
+function sendProfileInfo(doc, socket){
+	var response = {};
+	response.type = 'myprofileupdate';
+	response.status = doc.status;
+	response.appearOffline = doc.appearOffline;
+	socket.send(JSON.stringify(response));
+	
+}
+
 function searchQuery(data, socket){
 	var response = {};
 	response.type = data.type;
 	response.people = [];
 	var query = idModel.find()
 	.or(data.people)
-	.select('id username status picDate');
+	.select('id username status picDate online appearOffline');
 	query.exec(function(err, docs){
 		if(err){
 			console.log(err);
@@ -188,7 +208,8 @@ function searchQuery(data, socket){
 			{username: docs[i].username, 
 			_id: docs[i].id, 
 			status: docs[i].status, 
-			picDate: docs[i].picDate});
+			picDate: docs[i].picDate,
+			online: (docs[i].online && !docs[i].appearOffline)});
 		}
 		socket.send(JSON.stringify(response));
 	});
@@ -207,16 +228,16 @@ function mapQuery(data, socket){
 		.select({markers: {$elemMatch: {current: true}}});
 	
 	usrquery.exec(function(err, doc){
-		if(data.group === '' || data.getgroup === false){
-			response.people.push({_id: doc.id, lat: doc.lat, lon: doc.lon});
-			if(doc.markers[0]){
-				response.markers.push(formMarker(doc.markers[0]));
-			}
+		
+		response.people.push({_id: doc.id, lat: doc.lat, lon: doc.lon});
+		if(doc.markers[0]){
+			response.markers.push(formMarker(doc.markers[0]));
 		}
 		
 		if (data.getfriends === true){
 			var friendquery = idModel.find()
 					.where('_id').in(doc.friends)
+					.and([{online: 'true'}, {appearOffline: 'false'}])
 					.select('id lat lon');
 					
 			functCalls.push(function(callback){		
@@ -231,6 +252,8 @@ function mapQuery(data, socket){
 		if(data.getgroup === true && data.group !== ''){
 			var groupquery = idModel.find()
 					.where('group').equals(data.group)
+					.where('username').ne(data.username)
+					.and([{online: 'true'}, {appearOffline: 'false'}])
 					.select('id lat lon')
 					.select({markers: {$elemMatch: {current: true}}});
 					
@@ -255,6 +278,7 @@ function mapQuery(data, socket){
 			.where('lat').lte(data.maxLat)
 			.where('lon').gte(data.minLon)
 			.where('lon').lte(data.maxLon)
+			.and([{online: 'true'}, {appearOffline: 'false'}])
 			.select('id lat lon');
 			
 			functCalls.push(function(callback){
@@ -322,21 +346,21 @@ function broadcastChat(data){
 }
 
 function authenticateLogin(data, socket){
-	var query = idModel
+	var query = idModel.findOne()
 				.where('username').equals(data.username)
 				.where('password').equals(data.password)
 				.select('id group');
-	query.exec(function(err, arr){
-		if(!err){
-			if(arr.length == 1){
-				var index = wss.clients.indexOf(socket);
-				wss.clients[index].username = data.username;
-				sendLoginStatus(socket, arr[0].id, data.username, 'success');
-				sendMemberList('', wss.clients[index]);
-			}
-			else{
-				sendLoginStatus(socket, '', '', 'fail');
-			}
+	query.exec(function(err, doc){
+		if(!err && doc){
+			var index = wss.clients.indexOf(socket);
+			wss.clients[index].username = data.username;
+			sendLoginStatus(socket, doc.id, data.username, 'success');
+			sendMemberList('', wss.clients[index]);
+			doc.online = true;
+			doc.save();
+		}
+		else {
+			sendLoginStatus(socket, '', '', 'fail');
 		}
 	});
 }
@@ -349,6 +373,14 @@ function sendLoginStatus(socket, userId, username, status){
 	response.status = status;
 	
 	socket.send(JSON.stringify(response));
+}
+
+function setOnlineFlags(){
+	var clients = [];
+	wss.clients.forEach(function(c){
+		clients.push(c.username);
+	});
+	idModel.update({username: {$nin: clients}}, {$set:{online: 'false'}}, {}, checkUpd);
 }
 
 function confirmRegistration(data, socket){
@@ -389,7 +421,7 @@ function sendMemberList(groupId, socket){
 	if(groupId != ''){
 		var query = idModel
 		.where('group').equals(groupId)
-		.select('id username status picDate');
+		.select('id username status picDate online appearOffline');
 		query.exec(function(err, arr){
 			if(!err){
 				for(var i = 0; i < arr.length; i++){
@@ -397,9 +429,10 @@ function sendMemberList(groupId, socket){
 					{username: arr[i].username, 
 					id: arr[i].id, 
 					status: arr[i].status, 
-					picDate: arr[i].picDate});
+					picDate: arr[i].picDate,
+					online: (arr[i].online && !arr[i].appearOffline)});
 				}
-							
+				// console.log(members);			
 				result.members = members;
 				//console.log(result);		
 				for(var i = 0; i < arr.length; i++){
@@ -644,7 +677,7 @@ function sendFriendList(data, socket){
 			// console.log('found destination user');
 			var query = idModel.find()
 			.where('_id').in(doc.friends)
-			.select('id username status picDate');
+			.select('id username status picDate online appearOffline');
 			
 			if(data.except){
 				query.where('_id').nin(data.except);
@@ -654,9 +687,15 @@ function sendFriendList(data, socket){
 				if(!err){
 					for(var i = 0; i < docs.length; i++){
 						// console.log('adding friend ' + docs[i]);
-						response.friends.push(docs[i]);
+						var friend = {};
+						friend.id = docs[i].id;
+						friend.username = docs[i].username;
+						friend.status = docs[i].status;
+						friend.picDate = docs[i].picDate;
+						friend.online = docs[i].online && !docs[i].appearOffline;
+						
+						response.friends.push(friend);
 					}
-					
 					socket.send(JSON.stringify(response));
 				}
 			});
@@ -867,11 +906,17 @@ function viewFriendCategory(data, socket){
 		response.title = doc.friendCats[0].title;
 		idModel.find()
 		.where('_id').in(doc.friendCats[0].friends)
-		.select('id username status picDate')
+		.select('id username status picDate online appearOffline')
 		.exec(function(err, docs){
 			if(!err){
 				for(var i = 0; i < docs.length; i++){
-					response.friends.push(docs[i]);
+					var friend = {};
+					friend.id = docs[i].id;
+					friend.username = docs[i].username;
+					friend.status = docs[i].status;
+					friend.picDate = docs[i].picDate;
+					friend.online = docs[i].online && !docs[i].appearOffline;
+					response.friends.push(friend);
 				}
 				
 				socket.send(JSON.stringify(response));

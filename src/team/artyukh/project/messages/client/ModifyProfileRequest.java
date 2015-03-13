@@ -8,7 +8,8 @@ import team.artyukh.project.BindingActivity;
 public class ModifyProfileRequest {
 	
 	private JSONObject clientRequest = new JSONObject();
-	private String statusMessage = "";
+	private String statusMessage = null;
+	private Boolean appearOffline = null;
 	
 	public ModifyProfileRequest(){
 		
@@ -16,6 +17,10 @@ public class ModifyProfileRequest {
 	
 	public void setStatusMessage(String message){
 		this.statusMessage = message;
+	}
+	
+	public void setAppearOffline(boolean flag){
+		this.appearOffline = flag;
 	}
 	
 	public String toString(){
@@ -26,8 +31,16 @@ public class ModifyProfileRequest {
 	private void buildMessage(){
 		try {
 			clientRequest.put("type", "id");
+			clientRequest.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
 			clientRequest.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-			clientRequest.put("status", statusMessage);
+			
+			if(statusMessage != null){
+				clientRequest.put("status", statusMessage);
+			}
+			
+			if(appearOffline != null){
+				clientRequest.put("appearOffline", appearOffline);
+			}
 		} catch (JSONException e) {
 		}
 	}

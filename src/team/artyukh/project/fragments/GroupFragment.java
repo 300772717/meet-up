@@ -86,7 +86,8 @@ public class GroupFragment extends Fragment implements OnClickListener {
 				adapterList.add(new Person(member.getString("username"), 
 						member.getString("status"), 
 						member.getString("id"), 
-						member.getString("picDate")));
+						member.getString("picDate"),
+						member.getString("online")));
 			}
 			adapter = new ListableAdapter(parent, adapterList, false);
 		} catch (JSONException e) {

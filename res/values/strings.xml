@@ -16,5 +16,6 @@
     <string name="title_activity_friends">FriendsActivity</string>
     <string name="title_activity_friend_group">FriendGroupActivity</string>
     <string name="title_activity_select_friend">SelectFriendActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 
 </resources>

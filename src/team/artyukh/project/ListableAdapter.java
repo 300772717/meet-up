@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.MapMarker;
+import team.artyukh.project.lists.Person;
 import team.artyukh.project.messages.client.HideMarkerRequest;
 import team.artyukh.project.messages.client.PersonalMessageRequest;
 import team.artyukh.project.messages.client.SetMarkerRequest;
@@ -40,6 +41,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		public TextView title;
 		public TextView body;
 		public ImageView icon;
+		public TextView online;
 		public Button one;
 		public Button two;
 		public Button three;
@@ -68,6 +70,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.title = (TextView) row.findViewById(R.id.tvTitle);
 			holder.body = (TextView) row.findViewById(R.id.tvBody);
 			holder.icon = (ImageView) row.findViewById(R.id.ivIcon);
+			holder.online = (TextView) row.findViewById(R.id.tvOnline);
 			holder.one = (Button) row.findViewById(R.id.btnActionOne);
 			holder.two = (Button) row.findViewById(R.id.btnActionTwo);
 			holder.three = (Button) row.findViewById(R.id.btnActionThree);
@@ -82,11 +85,21 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		holder.body.setText(list.get(pos).getBody());
 		
 		if (list.get(pos).getType() == IListable.LISTABLE_PERSON) {
-			holder.one.setText("Profile");
-			holder.two.setText("Invite");
+			Person p = (Person) list.get(pos);
+			if(p.isOnline()){
+				holder.online.setText("Online");
+				holder.one.setVisibility(View.VISIBLE);
+				holder.three.setVisibility(View.VISIBLE);
+			} else {
+				holder.online.setText("Offline");
+				holder.one.setVisibility(View.INVISIBLE);
+				holder.three.setVisibility(View.INVISIBLE);
+			}
+			holder.one.setText("Invite");
+			holder.two.setText("Profile");
 			holder.three.setText("Message");
-			holder.one.setOnClickListener(openProfile(pos));
-			holder.two.setOnClickListener(sendInvite(pos));
+			holder.one.setOnClickListener(sendInvite(pos));
+			holder.two.setOnClickListener(openProfile(pos));
 			holder.three.setOnClickListener(sendMessage(pos));
 		} else if (list.get(pos).getType() == IListable.LISTABLE_MARKER) {
 //			holder.icon.setImageResource(R.drawable.icon_marker);

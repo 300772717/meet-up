@@ -61,7 +61,6 @@ public class MyProfileActivity extends BindingActivity {
 		ModifyProfileRequest modProfile = new ModifyProfileRequest();
 		modProfile.setStatusMessage(status.getText().toString());
 		send(modProfile.toString());
-		setPref(PREF_STATUS, status.getText().toString());
 		
 		if(imgBytes != null){
 			send(new ImageUploadRequest(ImageUploadRequest.OBJ_PERSON, Base64.encodeToString(imgBytes, Base64.NO_WRAP)).toString());

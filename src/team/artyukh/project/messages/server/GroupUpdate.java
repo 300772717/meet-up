@@ -18,14 +18,15 @@ public class GroupUpdate{
 		try {
 			this.groupId = groupUpdate.getString("group_id");
 			JSONArray grpMembers = groupUpdate.getJSONArray("members");
-			
+			Log.i("MEMBERS", grpMembers.toString());
 			for(int i = 0; i < grpMembers.length(); i++){
 				String username = grpMembers.getJSONObject(i).getString("username");
 				String id = grpMembers.getJSONObject(i).getString("id");
 				String status = grpMembers.getJSONObject(i).getString("status");
 				String profilePicDate = grpMembers.getJSONObject(i).getString("picDate");
+				String online = grpMembers.getJSONObject(i).getString("online");
 				
-				members.add(new Person(username, status, id, profilePicDate));
+				members.add(new Person(username, status, id, profilePicDate, online));
 			}
 		} catch (JSONException e) {
 			Log.i("GROUP_EX", e.toString());

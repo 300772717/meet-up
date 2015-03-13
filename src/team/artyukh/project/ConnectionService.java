@@ -15,12 +15,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import team.artyukh.project.lists.IListable;
+import team.artyukh.project.lists.Person;
 import team.artyukh.project.messages.client.ImageDownloadRequest;
 import team.artyukh.project.messages.client.InviteRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
 import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
+import team.artyukh.project.messages.server.MyProfileUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
 import android.app.Service;
 import android.content.Context;
@@ -104,13 +106,15 @@ public class ConnectionService extends Service {
 	
 	private void updateGroupMembers(GroupUpdate message){
 		JSONArray members = new JSONArray();
-		for(IListable p : message.getMembers()){
+		for(IListable m : message.getMembers()){
 			JSONObject member = new JSONObject();
+			Person p = (Person) m;
 			try {
 				member.put("username", p.getTitle());
 				member.put("status", p.getBody());
 				member.put("id", p.getId());
 				member.put("picDate", p.getImageDate());
+				member.put("online", p.isOnline());
 				
 				checkImageFile(p.getId(), p.getImageDate());
 				
@@ -143,12 +147,15 @@ public class ConnectionService extends Service {
 		}
 		
 		BindingActivity.setPref(BindingActivity.PREF_FRIENDS, friends.toString());
-		Log.i("FRIENDS", friends.toString());
+	}
+	
+	private void updateProfile(MyProfileUpdate message){
+		BindingActivity.setPref(BindingActivity.PREF_STATUS, message.getStatus());
+		BindingActivity.setPref(BindingActivity.PREF_APPEAR_OFFLINE, message.getAppearOffline());
 	}
 	
 	private void checkImageFile(String objId, String picDate){
 		File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), objId + "-" + picDate);
-//		Log.i("CHECKING FILE", objId + "-" + picDate);
 		if(!file.exists() && picDate.length() > 0){
 			Log.i("REQUEST SENT", objId + "-" + picDate);
 			send(new ImageDownloadRequest(objId).toString());
@@ -216,6 +223,8 @@ public class ConnectionService extends Service {
 				checkSearchImages(new SearchUpdate(msgObj));
 			} else if(type.equals("friendidupdate")){
 				updateFriends(new FriendIdUpdate(msgObj));
+			} else if(type.equals("myprofileupdate")){
+				updateProfile(new MyProfileUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
