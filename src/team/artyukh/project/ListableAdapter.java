@@ -101,12 +101,12 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			}
 			
 			holder.two.setText("Edit");
-//			holder.three.setVisibility(View.INVISIBLE);
+			holder.three.setVisibility(View.INVISIBLE);
 			
 		} else {
 			holder.one.setVisibility(View.INVISIBLE);
 			holder.two.setVisibility(View.INVISIBLE);
-//			holder.three.setVisibility(View.INVISIBLE);
+			holder.three.setVisibility(View.INVISIBLE);
 		}
 		
 		Bitmap image = bitmapHash.get(list.get(pos).getId());
@@ -222,9 +222,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 				    	dialog.cancel();
 				    }
 				  })
-				  .show(); 
-				
-								
+				  .show(); 					
 			}
 		};
 		
