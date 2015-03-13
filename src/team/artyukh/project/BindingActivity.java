@@ -16,6 +16,7 @@ import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.InviteUpdate;
 import team.artyukh.project.messages.server.LoginUpdate;
 import team.artyukh.project.messages.server.MapUpdate;
+import team.artyukh.project.messages.server.PersonalMessageUpdate;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
@@ -185,6 +186,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ViewFriendsUpdate(msgObj));
 			} else if(type.equals("viewmarkers")){
 				applyUpdate(new ViewMarkersUpdate(msgObj));
+			} else if(type.equals("personalmessage")){
+				applyUpdate(new PersonalMessageUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -236,6 +239,21 @@ public abstract class BindingActivity extends FragmentActivity {
 					}
 				});
         b.setNegativeButton("Not now",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+					}
+				});
+
+        AlertDialog confirm = b.create();
+        confirm.show();
+	}
+	
+	protected void applyUpdate(PersonalMessageUpdate message){
+		AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setTitle("Message from: " + message.getSender());
+		b.setMessage(message.getMessage());
+        b.setPositiveButton("OK",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						dialog.cancel();

@@ -11,7 +11,10 @@ import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.MapMarker;
 import team.artyukh.project.messages.client.HideMarkerRequest;
+import team.artyukh.project.messages.client.PersonalMessageRequest;
 import team.artyukh.project.messages.client.SetMarkerRequest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Environment;
@@ -22,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,6 +42,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		public ImageView icon;
 		public Button one;
 		public Button two;
+		public Button three;
 	}
 	
 	public ListableAdapter(BindingActivity context, ArrayList<IListable> list, boolean selectable){
@@ -65,6 +70,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.icon = (ImageView) row.findViewById(R.id.ivIcon);
 			holder.one = (Button) row.findViewById(R.id.btnActionOne);
 			holder.two = (Button) row.findViewById(R.id.btnActionTwo);
+			holder.three = (Button) row.findViewById(R.id.btnActionThree);
 			
 			row.setTag(holder);
 		}
@@ -78,8 +84,10 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		if (list.get(pos).getType() == IListable.LISTABLE_PERSON) {
 			holder.one.setText("Profile");
 			holder.two.setText("Invite");
+			holder.three.setText("Message");
 			holder.one.setOnClickListener(openProfile(pos));
 			holder.two.setOnClickListener(sendInvite(pos));
+			holder.three.setOnClickListener(sendMessage(pos));
 		} else if (list.get(pos).getType() == IListable.LISTABLE_MARKER) {
 //			holder.icon.setImageResource(R.drawable.icon_marker);
 			drawable = R.drawable.icon_marker;
@@ -93,10 +101,12 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			}
 			
 			holder.two.setText("Edit");
+//			holder.three.setVisibility(View.INVISIBLE);
 			
 		} else {
 			holder.one.setVisibility(View.INVISIBLE);
 			holder.two.setVisibility(View.INVISIBLE);
+//			holder.three.setVisibility(View.INVISIBLE);
 		}
 		
 		Bitmap image = bitmapHash.get(list.get(pos).getId());
@@ -186,6 +196,35 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			@Override
 			public void onClick(View v) {
 				parent.sendInvite(list.get(pos).getTitle());				
+			}
+		};
+		
+		return listener;
+	}
+	
+	private OnClickListener sendMessage(final int pos){
+		OnClickListener listener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final EditText input = new EditText(parent);
+				
+				new AlertDialog.Builder(parent)
+				  .setTitle("Send Message to " + list.get(pos).getTitle())
+				  .setView(input)
+				  .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) {
+				      String msg = input.getText().toString();
+				      parent.send(new PersonalMessageRequest(msg, list.get(pos).getTitle()).toString());
+				    }
+				  })
+				  .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) {
+				    	dialog.cancel();
+				    }
+				  })
+				  .show(); 
+				
+								
 			}
 		};
 		
