@@ -5,21 +5,20 @@ import org.json.JSONObject;
 
 import team.artyukh.project.BindingActivity;
 
-public class MyPositionRequest {
-	JSONObject request = new JSONObject();
-
-	public MyPositionRequest(double lon, double lat) {
+public class PersonalMessageRequest {
+	private JSONObject request = new JSONObject();
+	
+	public PersonalMessageRequest(String text, String username){
 		try {
-			request.put("type", "id");
+			request.put("type", "personalmessage");
 			request.put("username", BindingActivity.getStringPref(BindingActivity.PREF_USERNAME));
-			request.put("lat", lat);
-			request.put("lon", lon);
+			request.put("to", username);
+			request.put("text", text);
 		} catch (JSONException e) {
 		}
-
 	}
-
-	public String toString() {
+	
+	public String toString(){
 		return request.toString();
 	}
 }

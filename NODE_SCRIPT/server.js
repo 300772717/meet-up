@@ -132,6 +132,9 @@ wss.on('connection', function(ws) {
 			case 'viewmarkers':
 				viewPlaces(data, ws);
 				break;
+			case 'personalmessage':
+				sendPersonalMessage(data, ws);
+				break;
 			case 'newfriendcategory':
 				makeFriendCategory(data, ws);
 				break;
@@ -790,6 +793,27 @@ function hideMarker(data, socket){
 			});
 		}
 	});
+}
+
+function sendPersonalMessage(data, socket){
+	//CHANGE TO FILTER
+	var index = -1;
+	for(var i = 0; i < wss.clients.length; i++){
+		
+		if(wss.clients[i].username === data.to){
+			index = i;
+			break;
+		}
+	}
+	
+	if(index >= 0){
+		var response = {};
+		response.type = data.type;
+		response.username = data.username;
+		response.text = data.text;
+		
+		wss.clients[index].send(JSON.stringify(response));
+	}
 }
 
 function makeFriendCategory(data, socket){
