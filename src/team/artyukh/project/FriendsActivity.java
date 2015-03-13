@@ -3,15 +3,21 @@ package team.artyukh.project;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import team.artyukh.project.fragments.FriendGroupFragment;
+import team.artyukh.project.fragments.FriendsFragment;
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.ListableFragment;
 import team.artyukh.project.messages.client.RemoveFriendRequest;
+import team.artyukh.project.messages.client.ViewCategoriesRequest;
 import team.artyukh.project.messages.client.ViewFriendsRequest;
 import team.artyukh.project.messages.server.FriendIdUpdate;
+import team.artyukh.project.messages.server.ViewCategoriesUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -26,53 +32,34 @@ import android.widget.TextView;
 
 public class FriendsActivity extends BindingActivity {
 	
-	private TextView noFriends;
-	private Button removeFriend;
-	private EditText filterFriends;
-	private ListableFragment mainFrag;
-	private boolean showingFriends = false;
+	private ViewPager myPager;
+	private FriendsFragment fragFriends = new FriendsFragment();
+	private FriendGroupFragment fragGroups = new FriendGroupFragment();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_friends);
 		
-		noFriends = (TextView) findViewById(R.id.tvNoFriends);
-		removeFriend = (Button) findViewById(R.id.btnRemoveFriend);
-		filterFriends = (EditText) findViewById(R.id.etFriendFilter);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		
-		filterFriends.addTextChangedListener(filterWatcher);
+		myPager = (ViewPager) findViewById(R.id.friendPager);
 		
-		mainFrag = new ListableFragment(FriendsActivity.this);
-    	FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container_friends, mainFrag).commit();
-        mainFrag.makeSelectable();
-        
-        getSupportFragmentManager().beginTransaction().hide(mainFrag).commit();
-        noFriends.setVisibility(View.INVISIBLE);
-        removeFriend.setVisibility(View.INVISIBLE);
+		MyPagerAdapter myAdapter = new MyPagerAdapter(getSupportFragmentManager());
+		myAdapter.addFragment(fragFriends, "Friends");
+		myAdapter.addFragment(fragGroups, "Categories");
+		myPager.setAdapter(myAdapter);
 	}
 	
 	@Override
 	protected void onServiceConnected(){
-		send((new ViewFriendsRequest()).toString());
+		send((new ViewCategoriesRequest()).toString());
+		fragFriends.serviceConnected();
 	}
 	
 	@Override
 	protected void applyUpdate(ViewFriendsUpdate message){
-		if(message.getFriends().size() > 0){
-			mainFrag.setAdapter(new ListableAdapter(FriendsActivity.this, message.getFriends(), true));
-			getSupportFragmentManager().beginTransaction().show(mainFrag).commit();
-	        noFriends.setVisibility(View.INVISIBLE);
-	        removeFriend.setVisibility(View.VISIBLE);
-	        filterFriends.setVisibility(View.VISIBLE);
-		}
-		else{
-			getSupportFragmentManager().beginTransaction().hide(mainFrag).commit();
-	        noFriends.setVisibility(View.VISIBLE);
-	        removeFriend.setVisibility(View.INVISIBLE);
-	        filterFriends.setVisibility(View.INVISIBLE);
-		}
+		fragFriends.setFriendList(message);
 	}
 	
 	@Override
@@ -80,34 +67,10 @@ public class FriendsActivity extends BindingActivity {
 		send((new ViewFriendsRequest()).toString());
 	}
 	
-	public void removeFriend(View v){
-		int position = mainFrag.getSelectedItemPosition();
-		
-		if(position >= 0){
-			IListable friend = mainFrag.getAdapter().getItem(position);
-			send((new RemoveFriendRequest(friend.getId())).toString());
-		}
+	@Override
+	protected void applyUpdate(ViewCategoriesUpdate message){
+		fragGroups.setListAdapter(message.getCategories(), FriendsActivity.this);
 	}
-	
-	TextWatcher filterWatcher = new TextWatcher(){
-
-		@Override
-		public void afterTextChanged(Editable arg0) {
-			
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-				int arg3) {
-			
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int count, int after) {
-			mainFrag.getAdapter().filter(s.toString().toLowerCase(Locale.getDefault()));
-		}
-		
-	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

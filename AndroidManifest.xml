@@ -91,6 +91,22 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team.artyukh.project.HomeActivity" />
         </activity>
+        <activity
+            android:name=".FriendGroupActivity"
+            android:label="@string/title_activity_friend_group"
+            android:parentActivityName=".FriendsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.FriendsActivity" />
+        </activity>
+        <activity
+            android:name=".SelectFriendActivity"
+            android:label="@string/title_activity_select_friend"
+            android:parentActivityName=".FriendGroupActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.FriendGroupActivity" />
+        </activity>
     </application>
 
 </manifest>
