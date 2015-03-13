@@ -40,7 +40,7 @@ public class ConnectionService extends Service {
 	private static final String PREFS_FILE = "team.artyukh.project.PREFS_FILE";
 	private SharedPreferences data;
 	private ArrayList<String> pendingInvites = new ArrayList<String>();
-	private final String SERVER_IP = "ws://192.168.123.103:2222";
+	private final String SERVER_IP = "ws://192.168.123.100:2222";
 	private final IBinder mBinder = new ServiceBinder();
 	private MySocketClient msc;
 	

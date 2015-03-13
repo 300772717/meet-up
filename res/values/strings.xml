@@ -14,5 +14,7 @@
     <string name="title_activity_my_places">MyPlacesActivity</string>
     <string name="title_activity_other_profile">OtherProfileActivity</string>
     <string name="title_activity_friends">FriendsActivity</string>
+    <string name="title_activity_friend_group">FriendGroupActivity</string>
+    <string name="title_activity_select_friend">SelectFriendActivity</string>
 
 </resources>

@@ -19,6 +19,8 @@ import team.artyukh.project.messages.server.MapUpdate;
 import team.artyukh.project.messages.server.PersonalMessageUpdate;
 import team.artyukh.project.messages.server.RegisterUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
+import team.artyukh.project.messages.server.ViewCategoriesUpdate;
+import team.artyukh.project.messages.server.ViewFriendCategoryUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
 import team.artyukh.project.messages.server.ViewMarkersUpdate;
 import team.artyukh.project.messages.server.ViewProfileUpdate;
@@ -188,6 +190,10 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ViewMarkersUpdate(msgObj));
 			} else if(type.equals("personalmessage")){
 				applyUpdate(new PersonalMessageUpdate(msgObj));
+			} else if(type.equals("viewfriendcategories")){
+				applyUpdate(new ViewCategoriesUpdate(msgObj));
+			} else if(type.equals("viewfriendcategory")){
+				applyUpdate(new ViewFriendCategoryUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -281,6 +287,14 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(ViewMarkersUpdate message){
+		
+	}
+	
+	protected void applyUpdate(ViewCategoriesUpdate message){
+		
+	}
+	
+	protected void applyUpdate(ViewFriendCategoryUpdate message){
 		
 	}
 	

@@ -29,7 +29,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBLxCQ2xIYVTao98YRNHIc2eeiBXWEk-MY" />
+            android:value="AIzaSyAzwEN8AhRpT-5-W2K8HuSV0ZmKffhp5YI" />
 
         <service
             android:name=".ConnectionService"
@@ -90,6 +90,22 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team.artyukh.project.HomeActivity" />
+        </activity>
+        <activity
+            android:name=".FriendGroupActivity"
+            android:label="@string/title_activity_friend_group"
+            android:parentActivityName=".FriendsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.FriendsActivity" />
+        </activity>
+        <activity
+            android:name=".SelectFriendActivity"
+            android:label="@string/title_activity_select_friend"
+            android:parentActivityName=".FriendGroupActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.FriendGroupActivity" />
         </activity>
     </application>
 

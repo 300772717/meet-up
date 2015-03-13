@@ -103,10 +103,16 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			holder.two.setText("Edit");
 			holder.three.setVisibility(View.INVISIBLE);
 			
-		} else {
+		} else if(list.get(pos).getType() == IListable.LISTABLE_MESSAGE) {
 			holder.one.setVisibility(View.INVISIBLE);
 			holder.two.setVisibility(View.INVISIBLE);
 			holder.three.setVisibility(View.INVISIBLE);
+		} else{
+			holder.one.setVisibility(View.INVISIBLE);
+			holder.three.setVisibility(View.INVISIBLE);
+			holder.two.setText("View");
+			holder.two.setTag(list.get(pos).getId());
+			holder.two.setOnClickListener(ViewCategoryListener);
 		}
 		
 		Bitmap image = bitmapHash.get(list.get(pos).getId());
@@ -126,6 +132,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		if(select){
 			holder.one.setFocusable(false);
 			holder.two.setFocusable(false);
+			holder.three.setFocusable(false);
 			row.setBackground(parent.getResources().getDrawable(R.drawable.ilistable_background));
 		}
 
@@ -155,6 +162,18 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		}
 		notifyDataSetChanged();
 	}
+	
+	OnClickListener ViewCategoryListener = new OnClickListener(){
+
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(parent, FriendGroupActivity.class);
+			intent.putExtra("catid", v.getTag().toString());			
+			parent.startActivity(intent);
+			
+		}
+		
+	};
 	
 	private OnClickListener setCurrentMarker(final int pos){
 		OnClickListener listener = new View.OnClickListener() {

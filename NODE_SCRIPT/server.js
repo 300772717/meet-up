@@ -1,13 +1,15 @@
 var WebSocketServer = require('ws').Server
 , wss = new WebSocketServer({port: 2222});
 
+var async = require('async');
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/droidBase');
 
 var db = mongoose.connection;
 var schema;
 var profileImageModel;
-var idModel, markerModel, groupModel;
+var idModel, markerModel, groupModel, catModel;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
@@ -21,16 +23,21 @@ db.once('open', function (callback) {
 	saved: {type: Boolean, default: false}});
 	markerModel = mongoose.model('Markers', markerSchema);
 	
+	var friendCatSchema = new mongoose.Schema(
+	{title: {type: String, default: 'No Title'},
+	friends: {type: Array}});
+	catModel = mongoose.model('FriendCategories', friendCatSchema);
+	
 	schema = new mongoose.Schema(
 	{username: String,
 	password: String, 
 	status: {type: String, default: 'No Status'}, 
-	phone: String,
 	picDate: {type: String, default: ''}, 
 	group: {type: String, default: ''}, 
 	lat: {type: Number, default: 0}, 
 	lon: {type: Number, default: 0},
 	friends: {type: Array},
+	friendCats: [friendCatSchema],
 	markers: [markerSchema]});
 	idModel = mongoose.model('Id', schema);
 	
@@ -128,6 +135,24 @@ wss.on('connection', function(ws) {
 			case 'personalmessage':
 				sendPersonalMessage(data, ws);
 				break;
+			case 'newfriendcategory':
+				makeFriendCategory(data, ws);
+				break;
+			case 'viewfriendcategories':
+				viewFriendCategories(data, ws);
+				break;
+			case 'removefriendcategory':
+				removeFriendCategory(data, ws);
+				break;
+			case 'addtocategory':
+				addFriendToCategory(data, ws);
+				break;
+			case 'removefromcategory':
+				removeFriendFromCategory(data, ws);
+				break;
+			case 'viewfriendcategory':
+				viewFriendCategory(data, ws);
+				break;
 		}
 		
 	});
@@ -170,58 +195,81 @@ function searchQuery(data, socket){
 }
 
 function mapQuery(data, socket){
-	var query;
-	if(data.group === ''){
-		query = idModel
-		.where('lat').gte(data.minLat)
-		.where('lat').lte(data.maxLat)
-		.where('lon').gte(data.minLon)
-		.where('lon').lte(data.maxLon)
-		.select('id lat lon');
-	}
-	else{
-		query = idModel
-			.where('group').equals(data.group)
-			.select('id lat lon')
-			.select({markers: {$elemMatch: {current: true}}});
-	}
-	query.exec(function(err, arr){
-		if(!err){
-			var response = {};
-			response.type = 'req';
-			response.people = [].concat(arr);
-			response.markers = [];
-			if(data.group === ''){
-				idModel.findOne()
-				.where('username').equals(data.username)
-				.select({markers: {$elemMatch: {current: true}}})
-				.exec(function(err, doc){
-					if(doc.markers[0]){
-						response.markers.push(formMarker(doc.markers[0]));
-					}
-					socket.send(JSON.stringify(response));
-				});
-			}
-			else{
-				for(var i = 0; i < arr.length; i++){
-					// console.log(arr[i]);
-					if(!arr[i].markers) continue;
-					if(arr[i].markers[0]){
-						response.markers.push(formMarker(arr[i].markers[0]));
-					}
-					// var marker = arr[i].markers[0];
-					// if(marker){
-						// var mrk = {};
-						// mrk._id = marker.id;
-						// mrk.lon = marker.loc[0];
-						// mrk.lat = marker.loc[1];
-						// response.markers.push(mrk);
-					// }
-				}
-			
-				socket.send(JSON.stringify(response));
+	var response = {};
+	response.type = 'req';
+	response.people = [];
+	response.markers = [];
+	var functCalls = [];
+	
+	var usrquery = idModel.findOne()
+		.where('username').equals(data.username)
+		.select('id lat lon friends')
+		.select({markers: {$elemMatch: {current: true}}});
+	
+	usrquery.exec(function(err, doc){
+		if(data.group === '' || data.getgroup === false){
+			response.people.push({_id: doc.id, lat: doc.lat, lon: doc.lon});
+			if(doc.markers[0]){
+				response.markers.push(formMarker(doc.markers[0]));
 			}
 		}
+		
+		if (data.getfriends === true){
+			var friendquery = idModel.find()
+					.where('_id').in(doc.friends)
+					.select('id lat lon');
+					
+			functCalls.push(function(callback){		
+				friendquery.exec(function(err, docs){
+					response.people = response.people.concat(docs);
+					// console.log("FRIENDS");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		if(data.getgroup === true && data.group !== ''){
+			var groupquery = idModel.find()
+					.where('group').equals(data.group)
+					.select('id lat lon')
+					.select({markers: {$elemMatch: {current: true}}});
+					
+			functCalls.push(function(callback){		
+				groupquery.exec(function(err, docs){
+					docs.forEach(function(member){
+						response.people.push({_id: member.id, lat: member.lat, lon: member.lon});
+						if(!member.markers) return;
+						if(member.markers[0]){
+							response.markers.push(formMarker(member.markers[0]));
+						}
+					});
+					// console.log("GROUP");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		if(data.getnearby === true){
+			var nearbyquery = idModel.find()
+			.where('lat').gte(data.minLat)
+			.where('lat').lte(data.maxLat)
+			.where('lon').gte(data.minLon)
+			.where('lon').lte(data.maxLon)
+			.select('id lat lon');
+			
+			functCalls.push(function(callback){
+				nearbyquery.exec(function(err, docs){
+					response.people = response.people.concat(docs);
+					// console.log("NEARBY");
+					// console.log(docs);
+					callback(null, true);
+				});
+			});
+		}
+		
+		async.parallel(functCalls, function(err, result){
+			socket.send(JSON.stringify(response));
+		});
 	});
 }
 
@@ -549,7 +597,7 @@ function removeFriend(data, socket){
 	var query = idModel.findOne()
 	.where('username').equals(data.username)
 	.where('friends').equals(data.friendid)
-	.select('friends');
+	.select('friends friendCats');
 	
 	query.exec(function(err, doc){
 		if(!err && doc){
@@ -558,8 +606,19 @@ function removeFriend(data, socket){
 			if(index > -1){
 				doc.friends.splice(index, 1);
 			}
-			doc.save();
-			sendFriendIdList(doc.friends, socket);	
+			
+			doc.friendCats.forEach(function(cat){
+				index = cat.friends.indexOf(data.friendid);
+				if(index > -1){
+					cat.friends.splice(index, 1);
+				}
+			});
+			
+			doc.save(function(){
+				sendFriendIdList(doc.friends, socket);
+				viewFriendCategories(data, socket);
+			});
+			
 		}
 	});
 }
@@ -583,10 +642,15 @@ function sendFriendList(data, socket){
 	.exec(function(err, doc){	
 		if(!err && doc){
 			// console.log('found destination user');
-			idModel.find()
+			var query = idModel.find()
 			.where('_id').in(doc.friends)
-			.select('id username status picDate')
-			.exec(function(err, docs){
+			.select('id username status picDate');
+			
+			if(data.except){
+				query.where('_id').nin(data.except);
+			}
+			
+			query.exec(function(err, docs){
 				if(!err){
 					for(var i = 0; i < docs.length; i++){
 						// console.log('adding friend ' + docs[i]);
@@ -750,6 +814,123 @@ function sendPersonalMessage(data, socket){
 		
 		wss.clients[index].send(JSON.stringify(response));
 	}
+}
+
+function makeFriendCategory(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('friendCats')
+	.exec(function(err, doc){
+		doc.friendCats.push({title: data.title});
+		doc.save(function(err){
+			viewFriendCategories(data, socket);
+		});
+	});
+}
+
+function viewFriendCategories(data, socket){
+	var response = {};
+	response.type = 'viewfriendcategories';
+	response.cats = [];
+	
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('friendCats')
+	.exec(function(err, doc){
+		doc.friendCats.forEach(function(cat){
+			var c = {};
+			c.title = cat.title;
+			c.id = cat.id;
+			if(cat.friends){
+				c.count = cat.friends.length;
+				if(!c.count){
+					c.count = 0;
+				}
+			}else{
+				c.count = 0;
+			}
+			
+			response.cats.push(c);
+		});
+		socket.send(JSON.stringify(response));
+	});
+}
+
+function viewFriendCategory(data, socket){
+	var response = {};
+	response.type = 'viewfriendcategory';
+	response.friends = [];
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select({friendCats: {$elemMatch: {_id: data.catid}}})
+	.exec(function(err, doc){
+		response.title = doc.friendCats[0].title;
+		idModel.find()
+		.where('_id').in(doc.friendCats[0].friends)
+		.select('id username status picDate')
+		.exec(function(err, docs){
+			if(!err){
+				for(var i = 0; i < docs.length; i++){
+					response.friends.push(docs[i]);
+				}
+				
+				socket.send(JSON.stringify(response));
+			}
+		});
+	});
+}
+
+function removeFriendCategory(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('friendCats')
+	.exec(function(err, doc){
+		doc.friendCats.forEach(function(cat){
+			if(cat.id === data.catid){
+				cat.remove();
+				doc.save(function(){
+					viewFriendCategories(data, socket);
+				});
+			}
+		});
+	});
+}
+
+function addFriendToCategory(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('friendCats')
+	.exec(function(err, doc){
+		doc.friendCats.forEach(function(cat){
+			if(cat.id === data.catid){
+				if(cat.friends.indexOf(data.friendid) < 0){
+					cat.friends.push(data.friendid);
+					doc.save(function(){
+						viewFriendCategory(data, socket);
+					});
+				}
+			}
+		});
+	});
+}
+
+function removeFriendFromCategory(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('friendCats')
+	.exec(function(err, doc){
+		doc.friendCats.forEach(function(cat){
+			if(cat.id === data.catid){
+				var index = cat.friends.indexOf(data.friendid);
+				if(index > -1){
+					cat.friends.splice(index, 1);
+				}
+				doc.save(function(err, doc){
+					viewFriendCategory(data, socket);
+				});
+			}
+		});
+	});
 }
 
 function checkUpd(err, upd){

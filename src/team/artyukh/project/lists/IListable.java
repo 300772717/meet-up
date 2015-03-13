@@ -4,6 +4,7 @@ public interface IListable {
 	public static final int LISTABLE_PERSON = 0;
 	public static final int LISTABLE_MARKER = 1;
 	public static final int LISTABLE_MESSAGE = 2;
+	public static final int LISTABLE_CATEGORY = 3;
 	
 	public String getTitle();
 	public String getBody();

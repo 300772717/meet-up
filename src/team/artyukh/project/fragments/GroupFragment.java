@@ -64,7 +64,6 @@ public class GroupFragment extends Fragment implements OnClickListener {
 	}
     
     public void setMemberAdapter(ArrayList<IListable> members, BindingActivity activity){
-    	Log.i("GROUP MEMBER# ", members.size() + "");
     	adapter = new ListableAdapter(activity, members, false);
     	showMembers();
     }

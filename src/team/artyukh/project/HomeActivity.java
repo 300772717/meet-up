@@ -146,9 +146,9 @@ public class HomeActivity extends BindingActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-          }
+		if (mDrawerToggle.onOptionsItemSelected(item)) {
+			return true;
+		}
     	int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
