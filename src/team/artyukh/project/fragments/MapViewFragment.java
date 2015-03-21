@@ -98,6 +98,19 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		updateMyLocation();	
 	}
 	
+	public void userMoved(JSONObject loc){
+		double lat, lon;
+		try {
+			lat = loc.getDouble("lat");
+			lon = loc.getDouble("lon");
+			
+			myLoc = new LatLng(lat, lon);
+			calculateBox(myLoc);
+		} catch (JSONException e) {
+		}
+		
+	}
+	
 	@Override
 	public void onMapLongClick(final LatLng loc) {
     	boolean inRange = false;

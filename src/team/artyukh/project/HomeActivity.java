@@ -2,6 +2,8 @@ package team.artyukh.project;
 
 import java.util.ArrayList;
 
+import org.json.JSONObject;
+
 import team.artyukh.project.fragments.ChatFragment;
 import team.artyukh.project.fragments.GroupFragment;
 import team.artyukh.project.fragments.MapViewFragment;
@@ -97,7 +99,11 @@ public class HomeActivity extends BindingActivity {
         // Sync the toggle state after onRestoreInstanceState has occurred.
         mDrawerToggle.syncState();
     }
-
+    
+    @Override
+    protected void onLocationChanged(JSONObject loc) {
+    	fragMap.userMoved(loc);
+	}
 
     protected void applyUpdate(MapUpdate message){ 	
     	fragMap.updateMap(message);

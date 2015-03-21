@@ -178,7 +178,6 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new InviteUpdate(msgObj));
 			} else if (type.equals("newgroup")) {
 				applyUpdate(new GroupUpdate(msgObj));
-				Log.i("MEMBERS", msgObj.toString());
 			} else if (type.equals("imagedownload")){
 				applyUpdate(new ImageDownloadUpdate(msgObj));
 			} else if (type.equals("viewprofile")){
@@ -195,11 +194,17 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ViewCategoriesUpdate(msgObj));
 			} else if(type.equals("viewfriendcategory")){
 				applyUpdate(new ViewFriendCategoryUpdate(msgObj));
+			} else if(type.equals("locationchanged")){
+				onLocationChanged(msgObj);
 			}
 
 		} catch (JSONException e) {
 			Log.i("EX_BIND", e.toString());
 		}
+	}
+	
+	protected void onLocationChanged(JSONObject loc) {
+
 	}
 	
 	protected void applyUpdate(LoginUpdate message){

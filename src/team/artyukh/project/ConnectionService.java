@@ -18,6 +18,7 @@ import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.Person;
 import team.artyukh.project.messages.client.ImageDownloadRequest;
 import team.artyukh.project.messages.client.InviteRequest;
+import team.artyukh.project.messages.client.MyPositionRequest;
 import team.artyukh.project.messages.server.ChatUpdate;
 import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.GroupUpdate;
@@ -30,7 +31,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -40,6 +45,7 @@ public class ConnectionService extends Service {
 	
 	public static final String INTENT_MESSAGE = "INTENT_MESSAGE";
 	private static final String PREFS_FILE = "team.artyukh.project.PREFS_FILE";
+	private Location myLoc;
 	private SharedPreferences data;
 	private ArrayList<String> pendingInvites = new ArrayList<String>();
 	private final String SERVER_IP = "ws://192.168.123.100:2222";
@@ -59,7 +65,11 @@ public class ConnectionService extends Service {
 	
 	@Override
 	public void onCreate(){
+		LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5 * 1000, 10, LocationListener);
+		
 		data = this.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+		
 		URI servIp = URI.create(SERVER_IP);
 		msc = new MySocketClient(servIp);
 		msc.connect();
@@ -157,7 +167,6 @@ public class ConnectionService extends Service {
 	private void checkImageFile(String objId, String picDate){
 		File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), objId + "-" + picDate);
 		if(!file.exists() && picDate.length() > 0){
-			Log.i("REQUEST SENT", objId + "-" + picDate);
 			send(new ImageDownloadRequest(objId).toString());
 		}
 	}
@@ -165,7 +174,6 @@ public class ConnectionService extends Service {
 	private void saveImageFile(ImageDownloadUpdate update){
 		File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 		String[] files = dir.list();
-		Log.i("REQUEST ANS", update.getImageName());
 		for(String filename : files){
 			if(filename.startsWith(update.getObjectId())){
 				File oldImage = new File(dir, filename);
@@ -261,5 +269,40 @@ public class ConnectionService extends Service {
 			
 		}	
     }
+    
+    LocationListener LocationListener = new LocationListener() {
+	    public void onLocationChanged(Location location) {
+//	    	myLoc = location;
+			//SET PREFS
+	    	BindingActivity.setPref(BindingActivity.PREF_LAT, location.getLatitude());
+			BindingActivity.setPref(BindingActivity.PREF_LON, location.getLongitude());
+			//UPDATE MAP FRAGMENT IF ALIVE
+			Intent intent = new Intent(INTENT_MESSAGE);
+			intent.putExtra("message", makeJSONLocation(location));
+			LocalBroadcastManager.getInstance(ConnectionService.this).sendBroadcast(intent);
+			//SEND MESSAGE TO SERVER
+			send(new MyPositionRequest(location.getLongitude(), location.getLatitude()).toString());
+			
+	    }
+
+	    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+	    public void onProviderEnabled(String provider) {}
+
+	    public void onProviderDisabled(String provider) {}
+	  };
+	  
+	private String makeJSONLocation(Location loc){
+		JSONObject newLoc = new JSONObject();
+		
+		try {
+			newLoc.put("type", "locationchanged");
+			newLoc.put("lat", loc.getLatitude());
+			newLoc.put("lon", loc.getLongitude());
+		} catch (JSONException e) {
+		}
+		
+		return newLoc.toString();
+	}
 
 }
