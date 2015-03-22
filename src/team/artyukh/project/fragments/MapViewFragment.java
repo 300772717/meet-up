@@ -44,6 +44,7 @@ import android.widget.CheckBox;
 public class MapViewFragment extends Fragment implements OnMapClickListener, OnMapReadyCallback, OnMapLongClickListener {
 	
 	private GoogleMap map;
+	private SupportMapFragment mainFrag;
 	private boolean mapLoaded = false;
 	private double minLat, minLon, maxLat, maxLon;
 	private CheckBox chkFriends, chkGroup, chkNearby;
@@ -54,7 +55,6 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	private ArrayList<MapObject> people = new ArrayList<MapObject>();
 	private ArrayList<MapObject> markers = new ArrayList<MapObject>();
 	private BindingActivity parent;
-	private SupportMapFragment mainFrag;
 	private Thread requestThread;
 	
 	private void setUp(){

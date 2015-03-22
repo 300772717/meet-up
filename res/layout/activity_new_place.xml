@@ -1,0 +1,136 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="team.artyukh.project.NewPlaceActivity" >
+
+    <Button
+        android:id="@+id/btnMarkerCreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:onClick="createMarker"
+        android:text="Create" />
+
+    <EditText
+        android:id="@+id/etMarkerTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/etMarkerTitle"
+        android:layout_toLeftOf="@+id/etMarkerTitle"
+        android:text="Title:" />
+
+    <EditText
+        android:id="@+id/etMarkerDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/textView2"
+        android:ems="10"
+        android:minLines="2" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etMarkerTitle"
+        android:layout_toLeftOf="@+id/etMarkerDescription"
+        android:text="Description:" />
+
+    <EditText
+        android:id="@+id/etMarkerAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/textView3"
+        android:ems="10"
+        android:minLines="2" />
+
+    <Button
+        android:id="@+id/tbnCheckAddress"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etMarkerAddress"
+        android:layout_toRightOf="@+id/textView2"
+        android:onClick="checkAddress"
+        android:text="Check Location" />
+
+    <Button
+        android:id="@+id/btnMarkerCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:onClick="goBack"
+        android:text="Cancel" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etMarkerDescription"
+        android:layout_toLeftOf="@+id/etMarkerAddress"
+        android:text="Address:" />
+
+    <ImageView
+        android:id="@+id/ivMarkerPicture"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/tbnCheckAddress"
+        android:src="@drawable/icon_marker" />
+
+    <Button
+        android:id="@+id/btnChooseMarkerPic"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ivMarkerPicture"
+        android:layout_toRightOf="@+id/ivMarkerPicture"
+        android:onClick="choosePicture"
+        android:text="Choose Picture" />
+    
+    <SlidingDrawer
+        android:id="@+id/slidingDrawerMap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:handle="@+id/handleMap"
+        android:content="@+id/contentMap"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/handleMap"
+            android:layout_width="35dp"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/icon_map" />
+
+        <RelativeLayout
+            android:id="@+id/contentMap"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+        </RelativeLayout>
+
+    </SlidingDrawer>
+
+</RelativeLayout>

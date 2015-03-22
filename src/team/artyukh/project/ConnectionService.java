@@ -25,6 +25,7 @@ import team.artyukh.project.messages.server.GroupUpdate;
 import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.MyProfileUpdate;
 import team.artyukh.project.messages.server.SearchUpdate;
+import team.artyukh.project.messages.server.ViewMarkersUpdate;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -164,6 +165,12 @@ public class ConnectionService extends Service {
 		BindingActivity.setPref(BindingActivity.PREF_APPEAR_OFFLINE, message.getAppearOffline());
 	}
 	
+	private void updateMarkers(ViewMarkersUpdate message){
+		for(IListable marker : message.getMarkers()){
+			checkImageFile(marker.getId(), marker.getImageDate());
+		}
+	}
+	
 	private void checkImageFile(String objId, String picDate){
 		File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), objId + "-" + picDate);
 		if(!file.exists() && picDate.length() > 0){
@@ -233,7 +240,11 @@ public class ConnectionService extends Service {
 				updateFriends(new FriendIdUpdate(msgObj));
 			} else if(type.equals("myprofileupdate")){
 				updateProfile(new MyProfileUpdate(msgObj));
+			}else if(type.equals("viewmarkers")){
+				updateMarkers(new ViewMarkersUpdate(msgObj));
 			}
+			
+			
 
 		} catch (JSONException e) {
 			Log.i("EX_SERVICE", e.toString());

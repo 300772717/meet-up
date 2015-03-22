@@ -63,7 +63,7 @@ public class MyProfileActivity extends BindingActivity {
 		send(modProfile.toString());
 		
 		if(imgBytes != null){
-			send(new ImageUploadRequest(ImageUploadRequest.OBJ_PERSON, Base64.encodeToString(imgBytes, Base64.NO_WRAP)).toString());
+			send(new ImageUploadRequest(ImageUploadRequest.OBJ_PERSON, getStringPref(PREF_USER_ID), Base64.encodeToString(imgBytes, Base64.NO_WRAP)).toString());
 			
 			//REMOVE
 			String data = Base64.encodeToString(imgBytes, Base64.NO_WRAP);

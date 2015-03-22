@@ -115,6 +115,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team.artyukh.project.HomeActivity" />
         </activity>
+        <activity
+            android:name=".NewPlaceActivity"
+            android:label="@string/title_activity_new_place"
+            android:parentActivityName=".MyPlacesActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="team.artyukh.project.MyPlacesActivity" />
+        </activity>
     </application>
 
 </manifest>

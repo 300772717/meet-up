@@ -6,6 +6,7 @@ import team.artyukh.project.messages.client.RemoveMarkerRequest;
 import team.artyukh.project.messages.client.SaveMarkerRequest;
 import team.artyukh.project.messages.client.ViewMarkersRequest;
 import team.artyukh.project.messages.server.ViewMarkersUpdate;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 public class MyPlacesActivity extends BindingActivity {
 
 	private TextView noPlaces;
+	private Button btnCreate;
 	private Button btnSave;
 	private Button btnRemove;
 	private ListableFragment mainFrag;
@@ -30,6 +32,7 @@ public class MyPlacesActivity extends BindingActivity {
 		setContentView(R.layout.activity_my_places);		
 		
 		noPlaces = (TextView) findViewById(R.id.tvNoPlaces);
+		btnCreate = (Button) findViewById(R.id.btnNewMarker);
 		btnSave = (Button) findViewById(R.id.btnSaveMarker);
 		btnRemove = (Button) findViewById(R.id.btnRemoveMarker);
 		
@@ -64,6 +67,11 @@ public class MyPlacesActivity extends BindingActivity {
 	        btnSave.setVisibility(View.INVISIBLE);
 	        btnRemove.setVisibility(View.INVISIBLE);
 		}
+	}
+	
+	public void createMarker(View v){
+		Intent intent = new Intent(MyPlacesActivity.this, NewPlaceActivity.class);
+		startActivity(intent);
 	}
 	
 	public void saveMarker(View v){

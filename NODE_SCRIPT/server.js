@@ -117,6 +117,9 @@ wss.on('connection', function(ws) {
 			case 'setmarker':
 				setMarker(data, ws);
 				break;
+			case 'newmarker':
+				newMarker(data, ws);
+				break;
 			case 'hidemarker':
 				hideMarker(data, ws);
 				break;
@@ -544,11 +547,29 @@ function saveImage(data, socket){
 					//console.log(chunk);
 					if(data.object === 'person'){
 						idModel.update(
-						{_id: data.id},
+						{_id: data.userid},
 						{ $set: {picDate: chunk.uploadDate.getTime()}},
 						{upsert: true},
 						function(err, person){
 							sendMemberList(data.group, socket);
+						});
+					} else if(data.object === 'marker'){
+						idModel.findOne()
+						.where('_id').equals(data.userid)
+						.select('markers')
+						.exec(function(err, doc){
+							if(!err && doc){
+								for(var i = 0; i < doc.markers.length; i++){
+									if(doc.markers[i].id === data.id){
+										doc.markers[i].picDate = chunk.uploadDate.getTime();
+										break;
+									}
+								}
+								doc.save(function(){
+									delete data['image'];
+									viewPlaces(data, socket);
+								});
+							}
 						});
 					}
 				});
@@ -697,6 +718,29 @@ function sendFriendList(data, socket){
 						response.friends.push(friend);
 					}
 					socket.send(JSON.stringify(response));
+				}
+			});
+		}
+	});
+}
+
+function newMarker(data, socket){
+	idModel.findOne()
+	.where('username').equals(data.username)
+	.select('markers')
+	.exec(function(err, doc){
+		if(!err && doc){
+			var marker = {};
+			marker.title = data.title;
+			marker.description = data.description;
+			marker.loc = [data.lon, data.lat];
+			marker.saved = true;
+			
+			doc.markers.push(marker);
+			doc.save(function(){
+				if(data.image){
+					data.id = doc.markers[doc.markers.length - 1].id;
+					saveImage(data, socket);
 				}
 			});
 		}

@@ -11,15 +11,15 @@ public class ImageUploadRequest {
 	public static final String OBJ_PERSON = "person";
 	public static final String OBJ_MARKER = "marker";	
 	
-	public ImageUploadRequest(String object, String image){
+	public ImageUploadRequest(String object, String id, String image){
 		try {
 			request.put("type", "image");
 			request.put("object", object);
-			request.put("id", BindingActivity.getStringPref(BindingActivity.PREF_USER_ID));
+			request.put("id", id);
+			request.put("userid", BindingActivity.getStringPref(BindingActivity.PREF_USER_ID));
 			request.put("group", BindingActivity.getStringPref(BindingActivity.PREF_GROUP));
 			request.put("image", image);
 		} catch (JSONException e) {
-			Log.i("REQUEST OBJECT", "EXCEPTION");
 		}
 	}
 	
