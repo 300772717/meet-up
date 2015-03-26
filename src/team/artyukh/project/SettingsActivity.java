@@ -14,6 +14,9 @@ public class SettingsActivity extends BindingActivity {
 	
 	private Button btnApply;
 	private CheckBox cbAppearOffline;
+	private CheckBox cbMuteSound;
+	private CheckBox cbBlockMessages;
+	private CheckBox cbBlockInvites;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -22,9 +25,19 @@ public class SettingsActivity extends BindingActivity {
 		
 		btnApply = (Button) findViewById(R.id.btnApplySettings);
 		cbAppearOffline = (CheckBox) findViewById(R.id.cbAppearOffline);
+		cbMuteSound = (CheckBox) findViewById(R.id.cbMuteSound);
+		cbBlockMessages = (CheckBox) findViewById(R.id.cbBlockMessages);
+		cbBlockInvites = (CheckBox) findViewById(R.id.cbBlockInvites);
 		
 		boolean aprOffline = Boolean.parseBoolean(getStringPref(PREF_APPEAR_OFFLINE));
+		boolean muteSound = Boolean.parseBoolean(getStringPref(PREF_MUTE_SOUND));
+		boolean blockMessages = Boolean.parseBoolean(getStringPref(PREF_BLOCK_MESSAGES));
+		boolean blockInvites = Boolean.parseBoolean(getStringPref(PREF_BLOCK_INVITES));
+		
 		cbAppearOffline.setChecked(aprOffline);
+		cbMuteSound.setChecked(muteSound);
+		cbBlockMessages.setChecked(blockMessages);
+		cbBlockInvites.setChecked(blockInvites);
 		
 		btnApply.setOnClickListener(ApplyListener);
 	}
@@ -34,6 +47,9 @@ public class SettingsActivity extends BindingActivity {
 		public void onClick(View v) {
 			ModifyProfileRequest request = new ModifyProfileRequest();
 			request.setAppearOffline(cbAppearOffline.isChecked());
+			request.setMuteSound(cbMuteSound.isChecked());
+			request.setBlockMessages(cbBlockMessages.isChecked());
+			request.setBlockInvites(cbBlockInvites.isChecked());
 			send(request.toString());
 		}
 	};

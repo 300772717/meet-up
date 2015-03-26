@@ -163,6 +163,9 @@ public class ConnectionService extends Service {
 	private void updateProfile(MyProfileUpdate message){
 		BindingActivity.setPref(BindingActivity.PREF_STATUS, message.getStatus());
 		BindingActivity.setPref(BindingActivity.PREF_APPEAR_OFFLINE, message.getAppearOffline());
+		BindingActivity.setPref(BindingActivity.PREF_MUTE_SOUND, message.getMuteSound());
+		BindingActivity.setPref(BindingActivity.PREF_BLOCK_MESSAGES, message.getBlockMessages());
+		BindingActivity.setPref(BindingActivity.PREF_BLOCK_INVITES, message.getBlockInvites());
 	}
 	
 	private void updateMarkers(ViewMarkersUpdate message){

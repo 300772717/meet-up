@@ -10,6 +10,9 @@ public class ModifyProfileRequest {
 	private JSONObject clientRequest = new JSONObject();
 	private String statusMessage = null;
 	private Boolean appearOffline = null;
+	private Boolean muteSound = null;
+	private Boolean blockMessages = null;
+	private Boolean blockInvites = null;
 	
 	public ModifyProfileRequest(){
 		
@@ -21,6 +24,18 @@ public class ModifyProfileRequest {
 	
 	public void setAppearOffline(boolean flag){
 		this.appearOffline = flag;
+	}
+	
+	public void setMuteSound(boolean flag){
+		this.muteSound = flag;
+	}
+	
+	public void setBlockMessages(boolean flag){
+		this.blockMessages = flag;
+	}
+	
+	public void setBlockInvites(boolean flag){
+		this.blockInvites = flag;
 	}
 	
 	public String toString(){
@@ -40,6 +55,18 @@ public class ModifyProfileRequest {
 			
 			if(appearOffline != null){
 				clientRequest.put("appearOffline", appearOffline);
+			}
+			
+			if(muteSound != null){
+				clientRequest.put("muteSound", muteSound);
+			}
+			
+			if(blockMessages != null){
+				clientRequest.put("blockMessages", blockMessages);
+			}
+			
+			if(blockInvites != null){
+				clientRequest.put("blockInvites", blockInvites);
 			}
 		} catch (JSONException e) {
 		}

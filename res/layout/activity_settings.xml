@@ -62,20 +62,20 @@
             android:text="Notifications" />
 
         <CheckBox
-            android:id="@+id/checkBox3"
+            android:id="@+id/cbBlockMessages"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textView1"
-            android:text="TODO" />
+            android:text="Block Messages" />
 
         <CheckBox
-            android:id="@+id/checkBox4"
+            android:id="@+id/cbBlockInvites"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/checkBox3"
-            android:layout_below="@+id/checkBox3"
-            android:text="TODO" />
+            android:layout_alignLeft="@+id/cbBlockMessages"
+            android:layout_below="@+id/cbBlockMessages"
+            android:text="Block Invites" />
 
     </RelativeLayout>
 
@@ -97,20 +97,12 @@
             android:text="Sound" />
 
         <CheckBox
-            android:id="@+id/checkBox2"
+            android:id="@+id/cbMuteSound"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textView2"
-            android:text="TODO" />
-
-        <CheckBox
-            android:id="@+id/checkBox1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/checkBox2"
-            android:text="TODO" />
+            android:text="Mute Sound" />
     </RelativeLayout>
 
 </RelativeLayout>

@@ -40,7 +40,10 @@ db.once('open', function (callback) {
 	friendCats: [friendCatSchema],
 	markers: [markerSchema],
 	appearOffline: {type: Boolean, default: false},
-	online: {type: Boolean, default: false}});
+	online: {type: Boolean, default: false},
+	muteSound: {type: Boolean, default: false},
+	blockMessages: {type: Boolean, default: false},
+	blockInvites: {type: Boolean, default: false}});
 	idModel = mongoose.model('Id', schema);
 	
 	schema = new mongoose.Schema({group_id: String});
@@ -190,6 +193,9 @@ function sendProfileInfo(doc, socket){
 	response.type = 'myprofileupdate';
 	response.status = doc.status;
 	response.appearOffline = doc.appearOffline;
+	response.muteSound = doc.muteSound;
+	response.blockInvites = doc.blockInvites;
+	response.blockMessages = doc.blockMessages;
 	socket.send(JSON.stringify(response));
 	
 }

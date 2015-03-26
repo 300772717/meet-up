@@ -37,6 +37,10 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -68,7 +72,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	public static final String PREF_GROUP_MEMBERS = "GROUP_MEMBERS";
 	public static final String PREF_CHAT = "CHAT";
 	public static final String PREF_FRIENDS = "FRIENDS";
-	static final String PREF_PHONE_NUMBER = "PHONE_NUMBER";
+	public static final String PREF_MUTE_SOUND = "MUTE_SOUND";
+	public static final String PREF_BLOCK_MESSAGES = "BLOCK_MESSAGES";
+	public static final String PREF_BLOCK_INVITES = "BLOCK_INVITES";
+//	static final String PREF_PHONE_NUMBER = "PHONE_NUMBER";
 	private BroadcastReceiver receiver;
 	private ConnectionService connService;
     private boolean serviceBound = false;
@@ -235,6 +242,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 
 	protected void applyUpdate(InviteUpdate message) {
+		boolean block = Boolean.parseBoolean(getStringPref(PREF_BLOCK_INVITES));
+		if (block) return;
+		
+		playNotificationSound();
 		String host = "";
 		final String groupId;
 		
@@ -262,6 +273,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(PersonalMessageUpdate message){
+		boolean block = Boolean.parseBoolean(getStringPref(PREF_BLOCK_MESSAGES));
+		if (block) return;
+		
+		playNotificationSound();
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
         b.setTitle("Message from: " + message.getSender());
 		b.setMessage(message.getMessage());
@@ -302,6 +317,15 @@ public abstract class BindingActivity extends FragmentActivity {
 	
 	protected void applyUpdate(ViewFriendCategoryUpdate message){
 		
+	}
+	
+	private void playNotificationSound(){
+		boolean mute = Boolean.parseBoolean(getStringPref(PREF_MUTE_SOUND));
+		
+		if (!mute) {
+			MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.notification);
+			mp.start();
+		}
 	}
 	
 	private void joinGroup(String groupId){
