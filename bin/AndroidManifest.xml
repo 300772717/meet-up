@@ -45,6 +45,7 @@
         <activity
             android:name=".LoginActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -56,6 +57,7 @@
         <activity
             android:name=".RegisterActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:label="@string/title_activity_register"
             android:screenOrientation="portrait" >
         </activity>

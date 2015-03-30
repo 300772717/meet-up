@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ListableAdapter extends ArrayAdapter<IListable> {
 	
@@ -227,7 +228,8 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 		OnClickListener listener = new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				parent.sendInvite(list.get(pos).getTitle());				
+				parent.sendInvite(list.get(pos).getTitle());
+				Toast.makeText(parent, "Invite Sent", Toast.LENGTH_LONG).show();
 			}
 		};
 		

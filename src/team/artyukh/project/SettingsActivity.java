@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
 public class SettingsActivity extends BindingActivity {
 	
@@ -51,6 +52,7 @@ public class SettingsActivity extends BindingActivity {
 			request.setBlockMessages(cbBlockMessages.isChecked());
 			request.setBlockInvites(cbBlockInvites.isChecked());
 			send(request.toString());
+			Toast.makeText(SettingsActivity.this, "Settings Updated", Toast.LENGTH_LONG).show();
 		}
 	};
 

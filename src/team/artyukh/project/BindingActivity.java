@@ -75,7 +75,6 @@ public abstract class BindingActivity extends FragmentActivity {
 	public static final String PREF_MUTE_SOUND = "MUTE_SOUND";
 	public static final String PREF_BLOCK_MESSAGES = "BLOCK_MESSAGES";
 	public static final String PREF_BLOCK_INVITES = "BLOCK_INVITES";
-//	static final String PREF_PHONE_NUMBER = "PHONE_NUMBER";
 	private BroadcastReceiver receiver;
 	private ConnectionService connService;
     private boolean serviceBound = false;

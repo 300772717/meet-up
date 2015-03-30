@@ -144,7 +144,7 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 			Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
 			
 			List<Address> addr = null;
-			LatLng loc = new LatLng(0, 0);
+			LatLng loc = null;
 			
 			try {
 				addr = geocoder.getFromLocationName(params[0], 1);
@@ -169,15 +169,18 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 		protected void onPostExecute(LatLng loc) {
 			
 			if(sendRequest){
+				if(loc == null){
+					etAddress.setError("Cannot locate this address");
+					return;
+				}
 				sendRequest = false;
 				
-				String address = "";
-				String title = "";
-				String descr = "";
+				String address = etAddress.getText().toString();
+				String title = etTitle.getText().toString();
+				String descr = etDescription.getText().toString();
 				
-				address = etAddress.getText().toString();
-				title = etTitle.getText().toString();
-				descr = etDescription.getText().toString();
+				title = title.length() > 0 ? title : null;
+				descr = descr.length() > 0 ? descr : null;
 				
 				NewMarkerRequest request = new NewMarkerRequest(title, descr, address, loc.latitude, loc.longitude);
 				if(imgBytes != null){
@@ -187,8 +190,12 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 				finish();
 			}
 			else{
-				sDrawer.open();
 				if(mapLoaded){
+					if(loc == null){
+						etAddress.setError("Cannot locate this address");
+						return;
+					}
+					sDrawer.open();
 					map.clear();
 					map.addMarker(new MarkerOptions().position(loc));
 					map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 12));

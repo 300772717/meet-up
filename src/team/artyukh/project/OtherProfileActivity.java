@@ -23,6 +23,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class OtherProfileActivity extends BindingActivity implements OnClickListener {
 
@@ -94,6 +95,7 @@ public class OtherProfileActivity extends BindingActivity implements OnClickList
 	public void sendInvite(View v){
 		if(userName != null){
 			sendInvite(userName);
+			Toast.makeText(OtherProfileActivity.this, "Invite Sent", Toast.LENGTH_LONG).show();
 		}
 	}
 	

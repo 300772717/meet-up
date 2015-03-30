@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import team.artyukh.project.messages.client.RegisterRequest;
 import team.artyukh.project.messages.server.RegisterUpdate;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -25,6 +27,20 @@ public class RegisterActivity extends BindingActivity {
 			Intent intent = new Intent(this, LoginActivity.class);
 			startActivity(intent);
 		}
+		else{
+			AlertDialog.Builder b = new AlertDialog.Builder(this);
+	        b.setTitle("WARNING");
+			b.setMessage("An account with that username already exists");
+	        b.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+
+	        AlertDialog confirm = b.create();
+	        confirm.show();
+		}
 		
 	}
 	
@@ -38,8 +54,33 @@ public class RegisterActivity extends BindingActivity {
 		EditText passRep = (EditText) findViewById(R.id.etNewPasswordRepeat);
 		
 		if(!pass.getText().toString().equals(passRep.getText().toString())){
-			//HANDLE INPUT ERRORS
+			AlertDialog.Builder b = new AlertDialog.Builder(this);
+	        b.setTitle("WARNING");
+			b.setMessage("The passwords don't match");
+	        b.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+
+	        AlertDialog confirm = b.create();
+	        confirm.show();
 			return;
+		} else if(pass.getText().toString().length() < 6){
+			AlertDialog.Builder b = new AlertDialog.Builder(this);
+	        b.setTitle("WARNING");
+			b.setMessage("A password must be at least 6 characters in length");
+	        b.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+
+	        AlertDialog confirm = b.create();
+	        confirm.show();
+	        return;
 		}
 		
 		send(new RegisterRequest(usr.getText().toString(), pass.getText().toString()).toString());

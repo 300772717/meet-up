@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MyProfileActivity extends BindingActivity {
 	
@@ -65,28 +66,28 @@ public class MyProfileActivity extends BindingActivity {
 		if(imgBytes != null){
 			send(new ImageUploadRequest(ImageUploadRequest.OBJ_PERSON, getStringPref(PREF_USER_ID), Base64.encodeToString(imgBytes, Base64.NO_WRAP)).toString());
 			
-			//REMOVE
-			String data = Base64.encodeToString(imgBytes, Base64.NO_WRAP);
-			byte[] image = Base64.decode(data, Base64.NO_WRAP);
-			final BitmapFactory.Options options = new BitmapFactory.Options();
-		    //options.inSampleSize = 16;
-		    options.inJustDecodeBounds = true;
-		    BitmapFactory.decodeByteArray(image, 0, image.length, options);
-		    Log.i("BOUNDS", "WIDE " + options.outWidth + " HIGH " + options.outHeight);
-//			profilePic.setImageBitmap(BitmapFactory.decodeByteArray(image, 0, image.length));
-			
-			File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getStringPref(PREF_USERNAME));
-
-		    try {
-		        OutputStream os = new FileOutputStream(file);
-		        os.write(imgBytes);
-		        os.close();
-		    } catch (IOException e) {
-		        Log.i("ExternalStorage", "Error writing " + file, e);
-		    }
+//			//REMOVE
+//			String data = Base64.encodeToString(imgBytes, Base64.NO_WRAP);
+//			byte[] image = Base64.decode(data, Base64.NO_WRAP);
+//			final BitmapFactory.Options options = new BitmapFactory.Options();
+//		    //options.inSampleSize = 16;
+//		    options.inJustDecodeBounds = true;
+//		    BitmapFactory.decodeByteArray(image, 0, image.length, options);
+//		    Log.i("BOUNDS", "WIDE " + options.outWidth + " HIGH " + options.outHeight);
+////			profilePic.setImageBitmap(BitmapFactory.decodeByteArray(image, 0, image.length));
+//			
+//			File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getStringPref(PREF_USERNAME));
+//
+//		    try {
+//		        OutputStream os = new FileOutputStream(file);
+//		        os.write(imgBytes);
+//		        os.close();
+//		    } catch (IOException e) {
+//		        Log.i("ExternalStorage", "Error writing " + file, e);
+//		    }
 		}
 		
-//		Log.i("MODIFY_PROFILE", modProfile.toString());
+		Toast.makeText(MyProfileActivity.this, "Profile Updated", Toast.LENGTH_LONG).show();
 	}
 	
 	public void choosePicture(View v){
@@ -95,6 +96,10 @@ public class MyProfileActivity extends BindingActivity {
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
         startActivityForResult(intent, RESULT_IMAGE);
+	}
+	
+	public void goHome(View v){
+		finish();
 	}
 	
 	@Override
@@ -119,29 +124,13 @@ public class MyProfileActivity extends BindingActivity {
 			    Bitmap bitmap = bitmapDrawable.getBitmap();
 			    bitmap.recycle();
 			}
-//			final BitmapFactory.Options options = new BitmapFactory.Options();
-////		    options.inSampleSize = 16;
-//		    options.inJustDecodeBounds = true;
-//		    BitmapFactory.decodeFile(picturePath, options);
-//		    options.inSampleSize = BindingActivity.calculateInSampleSize(options, 150, 150);
-//		    
-//		    options.inJustDecodeBounds = false;
-//			Bitmap picture = BitmapFactory.decodeFile(picturePath, options);
+
 			Bitmap picture = getBitmap(new File(picturePath));
 			profilePic.setImageBitmap(picture);
 			
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		    picture.compress(CompressFormat.JPEG, 70, stream);
 		    imgBytes = stream.toByteArray();
-//		    picture.recycle();
-		    
-//		    Log.i("IMAGE_BASE64", imgString);
-//		    byte[] byteImage = Base64.decode(imgString, Base64.DEFAULT);
-//		    picture = BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length);
-//		    profilePic.setImageBitmap(picture);
-//		    send(new ImageUpdateRequest(imgString).toString());
-//		    send(imgString);
-//		    Log.i("IMAGE OBJ", new ImageUpdateRequest(imgString).toString());
 		}
 	}
 

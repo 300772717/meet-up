@@ -5,6 +5,7 @@ import team.artyukh.project.lists.ListableFragment;
 import team.artyukh.project.messages.client.RemoveMarkerRequest;
 import team.artyukh.project.messages.client.SaveMarkerRequest;
 import team.artyukh.project.messages.client.ViewMarkersRequest;
+import team.artyukh.project.messages.server.ImageDownloadUpdate;
 import team.artyukh.project.messages.server.ViewMarkersUpdate;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MyPlacesActivity extends BindingActivity {
 
@@ -53,6 +55,12 @@ public class MyPlacesActivity extends BindingActivity {
 	}
 	
 	@Override
+	protected void applyUpdate(ImageDownloadUpdate message){
+		super.applyUpdate(message);
+		mainFrag.refreshViews();
+	}
+	
+	@Override
 	protected void applyUpdate(ViewMarkersUpdate message){
 		if(message.getMarkers().size() > 0){
 			mainFrag.setAdapter(new ListableAdapter(MyPlacesActivity.this, message.getMarkers(), true));
@@ -80,6 +88,7 @@ public class MyPlacesActivity extends BindingActivity {
 		if(position < 0) return;
 		IListable marker = mainFrag.getAdapter().getItem(position);
 		send(new SaveMarkerRequest(marker.getId()).toString());
+		Toast.makeText(MyPlacesActivity.this, "Saved", Toast.LENGTH_SHORT).show();
 	}
 	
 	public void removeMarker(View v){

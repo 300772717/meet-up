@@ -31,6 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
+        android:onClick="goHome"
         android:text="Cancel" />
 
     <Button

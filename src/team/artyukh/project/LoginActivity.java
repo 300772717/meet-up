@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import team.artyukh.project.messages.client.LoginRequest;
 import team.artyukh.project.messages.server.LoginUpdate;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -31,6 +33,20 @@ public class LoginActivity extends BindingActivity {
 			
 			Intent intent = new Intent(this, HomeActivity.class);
 			startActivity(intent);
+		}
+		else{
+			AlertDialog.Builder b = new AlertDialog.Builder(this);
+	        b.setTitle("WARNING");
+			b.setMessage("Incorrect Login");
+	        b.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+
+	        AlertDialog confirm = b.create();
+	        confirm.show();
 		}
 	}
 	
