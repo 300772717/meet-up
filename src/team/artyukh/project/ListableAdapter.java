@@ -115,6 +115,7 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			}
 			
 			holder.two.setText("Edit");
+			holder.two.setOnClickListener(editMarker(pos));
 			holder.three.setVisibility(View.INVISIBLE);
 			
 		} else if(list.get(pos).getType() == IListable.LISTABLE_MESSAGE) {
@@ -205,6 +206,23 @@ public class ListableAdapter extends ArrayAdapter<IListable> {
 			@Override
 			public void onClick(View v) {
 				parent.send(new HideMarkerRequest(list.get(pos).getId()).toString());
+			}
+		};
+		
+		return listener;
+	}
+	
+	private OnClickListener editMarker(final int pos){
+		OnClickListener listener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(parent, NewPlaceActivity.class);
+				MapMarker mmrk = (MapMarker) list.get(pos);
+				intent.putExtra("title", mmrk.getTitle());
+				intent.putExtra("description", mmrk.getBody());
+				intent.putExtra("id", mmrk.getId());
+				intent.putExtra("address", mmrk.getAddress());
+				parent.startActivity(intent);
 			}
 		};
 		

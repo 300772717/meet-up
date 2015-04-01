@@ -23,6 +23,7 @@ public class ViewMarkersUpdate {
 						marker.getString("description"), 
 						marker.getString("id"), 
 						marker.getString("picDate"),
+						marker.getString("address"),
 						marker.getBoolean("current"));
 				markers.add(mMark);
 			}

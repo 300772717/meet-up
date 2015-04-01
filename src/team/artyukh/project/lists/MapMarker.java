@@ -6,14 +6,16 @@ public class MapMarker implements IListable {
 	private String description;
 	private String id;
 	private String picDate;
+	private String address;
 	private boolean current;
 	
-	public MapMarker(String markerTitle, String markerDescription, String markerId, String date, boolean isCurrent){
+	public MapMarker(String markerTitle, String markerDescription, String markerId, String date, String address, boolean isCurrent){
 		this.title = markerTitle;
 		this.description = markerDescription;
 		this.id = markerId;
 		this.picDate = date;
 		this.current = isCurrent;
+		this.address = address;
 	}
 	
 	@Override
@@ -43,5 +45,9 @@ public class MapMarker implements IListable {
 	
 	public boolean isCurrent(){
 		return current;
+	}
+	
+	public String getAddress(){
+		return address;
 	}
 }

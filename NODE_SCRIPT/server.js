@@ -17,6 +17,7 @@ db.once('open', function (callback) {
 	var markerSchema = new mongoose.Schema(
 	{title: {type: String, default: 'No Title'},
 	description: {type: String, default: 'No Description'},
+	address: {type: String, default: ''},
 	loc: {type: [Number], index: '2dsphere'},
 	picDate: {type: String, default: ''},
 	current: {type: Boolean, default: false},
@@ -739,6 +740,7 @@ function newMarker(data, socket){
 			var marker = {};
 			marker.title = data.title;
 			marker.description = data.description;
+			marker.address = data.address;
 			marker.loc = [data.lon, data.lat];
 			marker.saved = true;
 			
@@ -812,7 +814,7 @@ function viewPlaces(data, socket){
 				mrk.picDate = marker.picDate;
 				mrk.current = marker.current;
 				mrk.saved = marker.saved;
-				mrk.current = marker.current;
+				mrk.address = marker.address;
 				
 				response.markers.push(mrk);
 			});
@@ -831,6 +833,16 @@ function saveMarker(data, socket){
 			doc.markers.filter(function(mrk){
 				if(mrk.id === data.id){
 					mrk.saved = true;
+					if(data.edit){
+						mrk.title = data.title;
+						mrk.description = data.description;
+						mrk.address = data.address;
+						mrk.loc = [data.lon, data.lat];
+						
+						if(data.image){
+							saveImage(data, socket);
+						}
+					}
 					doc.save(function(){
 						data.type = 'viewmarkers';
 						viewPlaces(data, socket);

@@ -8,6 +8,7 @@ import java.util.Locale;
 
 import team.artyukh.project.messages.client.ImageUploadRequest;
 import team.artyukh.project.messages.client.NewMarkerRequest;
+import team.artyukh.project.messages.client.SaveMarkerRequest;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -28,6 +29,7 @@ import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Base64;
@@ -35,6 +37,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SlidingDrawer;
@@ -49,7 +52,10 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 	private EditText etTitle;
 	private EditText etDescription;
 	private ImageView markerPic;
+	private Button btnAction;
 	private boolean sendRequest = false;
+	private boolean editMode = false;
+	private String markerId, markerDescr, markerTitle, markerAddress;
 	private static int RESULT_IMAGE = 123;
 	private byte[] imgBytes = null;
 	
@@ -68,6 +74,33 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
         etAddress = (EditText) findViewById(R.id.etMarkerAddress);
 		etTitle = (EditText) findViewById(R.id.etMarkerTitle);
 		etDescription = (EditText) findViewById(R.id.etMarkerDescription);
+		btnAction = (Button) findViewById(R.id.btnMarkerCreate);
+		
+		Bundle incoming = getIntent().getExtras();
+				
+		if(incoming != null){
+			editMode = true;
+			markerTitle = incoming.getString("title", "");
+			markerDescr = incoming.getString("description", "");
+			markerId = incoming.getString("id");
+			markerAddress = incoming.getString("address");
+			
+			etTitle.setText(markerTitle);
+			etDescription.setText(markerDescr);
+			etAddress.setText(markerAddress);
+			btnAction.setText("Apply");
+			
+			
+			if(markerId != null){
+				Bitmap bmp = getBitmap(getExternalFilesDir(Environment.DIRECTORY_PICTURES), markerId);
+				if(bmp != null){
+					markerPic.setImageBitmap(bmp);
+//					ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//					bmp.compress(CompressFormat.JPEG, 70, stream);
+//				    imgBytes = stream.toByteArray();
+				}
+			}
+		}
 	}
 	
 	public void checkAddress(View v) {
@@ -102,12 +135,6 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 			String picturePath = cursor.getString(columnIndex);
 			cursor.close();
 
-//			Drawable drawable = markerPic.getDrawable();
-//			if (drawable instanceof BitmapDrawable) {
-//			    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-//			    Bitmap bitmap = bitmapDrawable.getBitmap();
-//			    bitmap.recycle();
-//			}
 			Bitmap picture = getBitmap(new File(picturePath));
 			markerPic.setImageBitmap(picture);
 			
@@ -182,11 +209,20 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 				title = title.length() > 0 ? title : null;
 				descr = descr.length() > 0 ? descr : null;
 				
-				NewMarkerRequest request = new NewMarkerRequest(title, descr, address, loc.latitude, loc.longitude);
-				if(imgBytes != null){
-					request.addImage(Base64.encodeToString(imgBytes, Base64.NO_WRAP));
+				if (!editMode) {
+					NewMarkerRequest request = new NewMarkerRequest(title, descr, address, loc.latitude, loc.longitude);
+					if (imgBytes != null) {
+						request.addImage(Base64.encodeToString(imgBytes, Base64.NO_WRAP));
+					}
+					send(request.toString());
+				} else {
+					SaveMarkerRequest request = new SaveMarkerRequest(markerId);
+					request.editInfo(title, descr, address, loc.latitude, loc.longitude);
+					if (imgBytes != null) {
+						request.addImage(Base64.encodeToString(imgBytes, Base64.NO_WRAP));
+					}
+					send(request.toString());
 				}
-				send(request.toString());
 				finish();
 			}
 			else{
