@@ -1,10 +1,34 @@
-var WebSocketServer = require('ws').Server
-, wss = new WebSocketServer({port: 2222});
+var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '192.168.123.100';
+var nodeport = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var mongohost = process.env.OPENSHIFT_MONGODB_DB_HOST;
+var mongoport = process.env.OPENSHIFT_MONGODB_DB_PORT;
+//OPENSHIFT_MONGODB_DB_URL
+
+var WebSocketServer = require('ws').Server;
+var http = require('http');
+
+var httpServer = http.createServer(function(request, response) {
+	response.writeHead(200, {'Content-Type': 'text/plain'});
+	response.write("Sup\n\n");
+	response.end("Bye \n");
+});
+
+httpServer.listen(nodeport, ipaddress, function(){
+	
+});
+
+var wss = new WebSocketServer({
+	server: httpServer,
+	autoAcceptConnections: false
+});
 
 var async = require('async');
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/droidBase');
+//'mongodb://localhost/droidBase'
+//'mongodb://admin:qXEZgf39U2gY@' + mongohost + ":" + mongoport + "/meetup"
+mongoose.connect('mongodb://admin:qXEZgf39U2gY@' + mongohost + ":" + mongoport + "/meetup");
+//admin:qXEZgf39U2gY@
 
 var db = mongoose.connection;
 var schema;
@@ -241,7 +265,7 @@ function mapQuery(data, socket){
 		
 		response.people.push({_id: doc.id, lat: doc.lat, lon: doc.lon});
 		if(doc.markers[0]){
-			response.markers.push(formMarker(doc.markers[0]));
+			response.markers.push(formMarker(doc.markers[0], doc.id));
 		}
 		
 		if (data.getfriends === true){
@@ -273,7 +297,7 @@ function mapQuery(data, socket){
 						response.people.push({_id: member.id, lat: member.lat, lon: member.lon});
 						if(!member.markers) return;
 						if(member.markers[0]){
-							response.markers.push(formMarker(member.markers[0]));
+							response.markers.push(formMarker(member.markers[0], member.id));
 						}
 					});
 					// console.log("GROUP");
@@ -307,11 +331,14 @@ function mapQuery(data, socket){
 	});
 }
 
-function formMarker(marker){
+function formMarker(marker, userid){
 	var mrk = {};
 	mrk._id = marker.id;
 	mrk.lon = marker.loc[0];
 	mrk.lat = marker.loc[1];
+	mrk.userid = userid;
+	mrk.description = marker.description;
+	mrk.picDate = marker.picDate;
 	
 	return mrk;
 }
@@ -472,7 +499,8 @@ function sendMemberList(groupId, socket){
 				{username: doc.username,
 				id: doc.id,
 				status: doc.status,
-				picDate: doc.picDate});
+				picDate: doc.picDate,
+				online: (doc.online && !doc.appearOffline)});
 				
 				result.members = members;
 				socket.send(JSON.stringify(result));

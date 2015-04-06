@@ -3,11 +3,14 @@ package team.artyukh.project.messages.server;
 import com.google.android.gms.maps.model.LatLng;
 
 public class MapObject {
+	public static final int TYPE_PERSON = 0;
+	public static final int TYPE_MARKER = 1;
+	
 	private LatLng location;
 	private String id;
-	private String type;
+	private int type;
 	
-	public MapObject(String objType, double lat, double lon, String objId){
+	public MapObject(int objType, double lat, double lon, String objId){
 		this.location = new LatLng(lat, lon);
 		this.id = objId;
 		this.type = objType;
@@ -26,7 +29,7 @@ public class MapObject {
 		return id;
 	}
 	
-	public String getType(){
+	public int getType(){
 		return type;
 	}
 }

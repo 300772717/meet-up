@@ -49,7 +49,8 @@ public class ConnectionService extends Service {
 	private Location myLoc;
 	private SharedPreferences data;
 	private ArrayList<String> pendingInvites = new ArrayList<String>();
-	private final String SERVER_IP = "ws://192.168.123.100:2222";
+//	private final String SERVER_IP = "ws://192.168.123.100:8080";
+	private final String SERVER_IP = "ws://meetup-nodesocket.rhcloud.com:8000";
 	private final IBinder mBinder = new ServiceBinder();
 	private MySocketClient msc;
 	

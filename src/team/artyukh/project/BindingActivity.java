@@ -357,12 +357,20 @@ public abstract class BindingActivity extends FragmentActivity {
 		send(invite.toString());
 	}
 	
-	protected static Bitmap getBitmap(File dir, String objId){
+	public static Bitmap getBitmap(File dir, String objId){
 //		File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 		
+		return findBitmapFile(dir, objId);
+	}
+	
+	public static Bitmap getBitmap(File dir, String objId, String picDate){
+		return findBitmapFile(dir, objId + "-" + picDate);
+	}
+	
+	private static Bitmap findBitmapFile(File dir, String fname){
 		for(String filename : dir.list()){
-			Log.i("CHECKING FILE", filename);
-			if(filename.startsWith(objId)){
+//			Log.i("CHECKING FILE", filename);
+			if(filename.startsWith(fname)){
 				File image = new File(dir, filename);
 				
 				final BitmapFactory.Options options = new BitmapFactory.Options();

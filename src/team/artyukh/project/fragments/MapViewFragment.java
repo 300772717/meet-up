@@ -2,35 +2,46 @@ package team.artyukh.project.fragments;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import team.artyukh.project.BindingActivity;
 import team.artyukh.project.R;
+import team.artyukh.project.messages.client.ImageDownloadRequest;
 import team.artyukh.project.messages.client.MapRequest;
 import team.artyukh.project.messages.client.MyPositionRequest;
 import team.artyukh.project.messages.client.SearchRequest;
 import team.artyukh.project.messages.client.SetMarkerRequest;
+import team.artyukh.project.messages.server.MapObjectMarker;
 import team.artyukh.project.messages.server.MapObject;
 import team.artyukh.project.messages.server.MapUpdate;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.app.AlertDialog;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -39,6 +50,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 
 public class MapViewFragment extends Fragment implements OnMapClickListener, OnMapReadyCallback, OnMapLongClickListener {
@@ -49,11 +62,11 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	private double minLat, minLon, maxLat, maxLon;
 	private CheckBox chkFriends, chkGroup, chkNearby;
 	private LatLng myLoc;
-	private String phone;
 	private final double EARTH_RAD = 6371;
 	private final double BOX_SIZE = 10;
 	private ArrayList<MapObject> people = new ArrayList<MapObject>();
-	private ArrayList<MapObject> markers = new ArrayList<MapObject>();
+	private ArrayList<MapObjectMarker> markersInfo = new ArrayList<MapObjectMarker>();
+	private ArrayList<Circle> circles = new ArrayList<Circle>();
 	private BindingActivity parent;
 	private Thread requestThread;
 	
@@ -61,10 +74,6 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		parent = (BindingActivity) getActivity();
 		mainFrag = new SupportMapFragment();
 		mainFrag.getMapAsync(this);
-		
-		TelephonyManager tmgr = (TelephonyManager) parent.getSystemService(Context.TELEPHONY_SERVICE);
-
-		phone = tmgr.getLine1Number();
 
 		Double myLat, myLon;
 		myLat = BindingActivity.getDoublePref(BindingActivity.PREF_LAT);
@@ -91,6 +100,16 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	
 	@Override
 	public void onMapClick(LatLng loc) {
+		//Hide all info windows on map click
+		//Delete marker if old and info window not showing
+		for(MapObjectMarker m : markersInfo){
+			m.setSnippet("false");
+			m.hideInfoWindow();
+			if (m.isOld() && !m.isVisible()) {
+				m.removeMarker();
+			}
+			m.setIcon(BitmapDescriptorFactory.defaultMarker());
+		}
 		myLoc = loc;
 		BindingActivity.setPref(BindingActivity.PREF_LAT, loc.latitude);
 		BindingActivity.setPref(BindingActivity.PREF_LON, loc.longitude);
@@ -164,25 +183,143 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	
 	public void updateMap(MapUpdate message){
 		if(!mapLoaded) return;
+		Circle crc;
+		Marker mrk;
 		
-		map.clear();
+		for(Circle c : circles){
+			c.remove();
+		}
+		
+		for(Iterator<MapObjectMarker> itr = markersInfo.iterator(); itr.hasNext();){
+			MapObjectMarker m = itr.next();
+			
+			if(!m.isVisible()){
+				m.removeMarker();
+				itr.remove();
+			}
+			else {
+//				m.removeMarker();
+				m.setOld();
+			}
+		}
+//		map.clear();
+		circles.clear();
+		
     	people = message.getPeople();
     	for(MapObject obj : people){
     		LatLng spot = obj.getLocation();
-			map.addCircle(new CircleOptions()
+    		crc = map.addCircle(new CircleOptions()
     		.center(spot)
     		.radius(100)
     		.fillColor(Color.RED)
-    		.strokeColor(Color.BLACK));;
+    		.strokeColor(Color.BLACK));
+			circles.add(crc);
     	}
     	
-    	markers = message.getMarkers();
-    	for(MapObject obj : markers){
+    	markersInfo.addAll(message.getMarkers());
+    	int i = 0;
+    	MapObjectMarker temp = null;
+    	for(MapObjectMarker obj : markersInfo){
+    		if(obj.isOld()){
+    			obj.setTitle(String.valueOf(i));
+    			temp = obj;
+    			i++;
+    			continue;
+    		}
     		LatLng spot = obj.getLocation();
-    		map.addMarker(new MarkerOptions()
-    		.position(spot));
+    		MarkerOptions opt = new MarkerOptions();
+    		opt.title(String.valueOf(i));
+    		opt.position(spot);
+    		opt.snippet("false");
+//    		if(obj.isOld()){
+//    			opt.snippet("true");
+//    		}
+//    		else{
+//    			opt.snippet("false");
+//    		}
+    		mrk = map.addMarker(opt);
+    		//TODO: Rewrite this to store marker id + associated object in a hashmap
+    		//YOU IDIOT
+    		obj.addMarker(mrk);
+//    		if(obj.isOld()){
+//    			temp = obj;
+//    		}
+    		i++;
+    	}
+    	
+    	if(temp != null){
+    		temp.showInfoWindow();
     	}
 	}
+	
+	private OnMarkerClickListener markerListener = new OnMarkerClickListener(){
+		@Override
+		public boolean onMarkerClick(Marker marker) {		
+			return false;
+		}
+		
+	};
+	
+	private InfoWindowAdapter iwAdapter = new InfoWindowAdapter() {
+
+		String desc;
+    	String markerId;
+    	String picDate;
+    	Bitmap bmp;
+    	View v;
+    	ImageView ivIcon;
+        TextView tvTitle;
+        TextView tvDescr;
+		
+        @Override
+        public View getInfoWindow(Marker marker) {
+        	return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+        	int index = Integer.parseInt(marker.getTitle());
+        	v = parent.getLayoutInflater().inflate(R.layout.info_window_marker, null);
+        	ivIcon = (ImageView) v.findViewById(R.id.ivInfoIcon);
+            tvTitle = (TextView) v.findViewById(R.id.tvInfoTitle);
+            tvDescr = (TextView) v.findViewById(R.id.tvInfoDescr);
+        	
+            for(MapObjectMarker m : markersInfo){
+				m.setSnippet("false");
+				m.setIcon(BitmapDescriptorFactory.defaultMarker());
+            }
+            
+            marker.setSnippet("true");
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            makeView(markersInfo.get(index));
+            
+            for (MapObjectMarker m : markersInfo) {
+				if (m.isOld() && !m.isVisible()) {
+					m.hideInfoWindow();
+					m.removeMarker();
+				}
+			}
+            
+            return v;
+        }
+        
+        private void makeView(MapObjectMarker m){
+        	
+        	markerId = m.getId();
+        	picDate = m.getImageDate();
+            desc = m.getDescription();  
+            
+            bmp = BindingActivity.getBitmap(parent.getExternalFilesDir(Environment.DIRECTORY_PICTURES), markerId, picDate);
+            if(bmp != null){
+            	ivIcon.setImageBitmap(bmp);
+            }
+            else{
+            	parent.send(new ImageDownloadRequest(markerId).toString());
+            }
+            
+            tvDescr.setText(desc);
+        }
+    };
 	
 	private void requestUpdate() {
 		//THE REQUEST CONSTRUCTOR TAKES RADIAN ANGLES
@@ -205,6 +342,8 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		map.setOnMapClickListener(this);
 		map.setOnMapLongClickListener(this);
+		map.setOnMarkerClickListener(markerListener);
+		map.setInfoWindowAdapter(iwAdapter);
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 2));
 		mapLoaded = true;
 	}
@@ -274,7 +413,6 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		public void onClick(View v) {
 			CheckBox cb = (CheckBox) v;
 			String status = String.valueOf(cb.isChecked());
-			Log.i("CHECKED", status);
 			switch(v.getId()){
 			case R.id.cbFriends:
 				BindingActivity.setPref(BindingActivity.PREF_FILT_FRIENDS, status);

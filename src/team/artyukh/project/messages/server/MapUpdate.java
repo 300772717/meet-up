@@ -10,14 +10,13 @@ import android.util.Log;
 
 public class MapUpdate {
 	
-	private ArrayList<MapObject> people;
-	private ArrayList<MapObject> markers;
+	private ArrayList<MapObject> people = new ArrayList<MapObject>();
+	private ArrayList<MapObjectMarker> markers = new ArrayList<MapObjectMarker>();
 	
 	public MapUpdate(JSONObject mapUpdate){
 		try {
-			people = getObjList(mapUpdate.getJSONArray("people"), "person");
-			markers = getObjList(mapUpdate.getJSONArray("markers"), "marker");
-			Log.i("MRKARR", mapUpdate.getJSONArray("markers").toString());
+			getObjList(mapUpdate.getJSONArray("people"), MapObject.TYPE_PERSON);
+			getObjList(mapUpdate.getJSONArray("markers"), MapObject.TYPE_MARKER);
 		} catch (JSONException e) {
 		}
 	}
@@ -26,26 +25,37 @@ public class MapUpdate {
 		return people;
 	}
 	
-	public ArrayList<MapObject> getMarkers(){
+	public ArrayList<MapObjectMarker> getMarkers(){
 		return markers;
 	}
 	
-	private ArrayList<MapObject> getObjList(JSONArray arr, String type){
-		ArrayList<MapObject> objects = new ArrayList<MapObject>();
+	private void getObjList(JSONArray arr, int type){
 		MapObject obj;
+		MapObjectMarker mrk;
 		
 		for(int i = 0; i < arr.length(); i++){
 			try {
-				obj = new MapObject(type, arr.getJSONObject(i).getDouble("lat"), arr.getJSONObject(i).getDouble("lon"), arr.getJSONObject(i).getString("_id"));
+				if(type == MapObject.TYPE_PERSON){
+					obj = new MapObject(type, arr.getJSONObject(i).getDouble("lat"), arr.getJSONObject(i).getDouble("lon"), arr.getJSONObject(i).getString("_id"));
+					people.add(obj);
+				}
+				else{
+					mrk  = new MapObjectMarker(type,
+							arr.getJSONObject(i).getDouble("lat"),
+							arr.getJSONObject(i).getDouble("lon"),
+							arr.getJSONObject(i).getString("_id"),
+							arr.getJSONObject(i).getString("userid"),
+							arr.getJSONObject(i).getString("description"),
+							arr.getJSONObject(i).getString("picDate"));
+					markers.add(mrk);
+				}
 				
-				objects.add(obj);
+				
 				
 			} catch (JSONException e) {
 				Log.i("EX", e.toString());
 			}
 		}
-		
-		return objects;
 	}
 
 }

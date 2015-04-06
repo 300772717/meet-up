@@ -19,7 +19,7 @@ public class SearchRequest {
 	
 	public SearchRequest(ArrayList<MapObject> objects){
 		for(MapObject obj : objects){
-			if(obj.getType().equals("person")){
+			if(obj.getType() == MapObject.TYPE_PERSON){
 				addPerson("_id", obj.getId());
 			}
 		}
