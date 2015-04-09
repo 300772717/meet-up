@@ -8,11 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import team.artyukh.project.BindingActivity;
+import team.artyukh.project.EditGroupActivity;
 import team.artyukh.project.ListableAdapter;
 import team.artyukh.project.R;
 import team.artyukh.project.lists.IListable;
 import team.artyukh.project.lists.ListableFragment;
 import team.artyukh.project.lists.Person;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -28,7 +30,7 @@ public class GroupFragment extends Fragment implements OnClickListener {
 
 	private View root;
 	private ListableFragment mainFrag;
-	private Button newGroup, leave;
+	private Button newGroup, leave, viewGroup;
     private TextView noGroup;
     private BindingActivity parent = null;
     private ListableAdapter adapter = null;
@@ -105,6 +107,7 @@ public class GroupFragment extends Fragment implements OnClickListener {
 	    noGroup.setVisibility(View.VISIBLE);
 		newGroup.setVisibility(View.VISIBLE);
 		leave.setVisibility(View.INVISIBLE);
+		viewGroup.setVisibility(View.INVISIBLE);
 		getChildFragmentManager().beginTransaction().hide(mainFrag).commit();
 	}
 	
@@ -112,6 +115,7 @@ public class GroupFragment extends Fragment implements OnClickListener {
 		noGroup.setVisibility(View.INVISIBLE);
 		newGroup.setVisibility(View.INVISIBLE);
 		leave.setVisibility(View.VISIBLE);
+		viewGroup.setVisibility(View.VISIBLE);
 		getChildFragmentManager().beginTransaction().show(mainFrag).commit();
 	}
 	
@@ -141,6 +145,10 @@ public class GroupFragment extends Fragment implements OnClickListener {
 			parent.send(grpObj.toString());
 			BindingActivity.removePref(BindingActivity.PREF_CHAT);
 			break;
+		case R.id.btnGroupInfo:
+			Intent intent = new Intent(parent, EditGroupActivity.class);
+			parent.startActivity(intent);
+			break;
 		}
 		
 	}
@@ -152,9 +160,11 @@ public class GroupFragment extends Fragment implements OnClickListener {
 		noGroup = (TextView) root.findViewById(R.id.tvNotGrouped);
 		newGroup = (Button) root.findViewById(R.id.btnCreateGroup);
 		leave = (Button) root.findViewById(R.id.btnLeave);
+		viewGroup = (Button) root.findViewById(R.id.btnGroupInfo);
 		
 		leave.setOnClickListener(this);
 		newGroup.setOnClickListener(this);
+		viewGroup.setOnClickListener(this);
 		
 		mainFrag = new ListableFragment(parent);
     	FragmentTransaction transaction = getChildFragmentManager().beginTransaction();

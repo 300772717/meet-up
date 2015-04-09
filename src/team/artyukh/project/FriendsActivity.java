@@ -1,34 +1,16 @@
 package team.artyukh.project;
 
-import java.util.ArrayList;
-import java.util.Locale;
-
 import team.artyukh.project.fragments.FriendGroupFragment;
 import team.artyukh.project.fragments.FriendsFragment;
-import team.artyukh.project.lists.IListable;
-import team.artyukh.project.lists.ListableFragment;
-import team.artyukh.project.messages.client.RemoveFriendRequest;
 import team.artyukh.project.messages.client.ViewCategoriesRequest;
 import team.artyukh.project.messages.client.ViewFriendsRequest;
 import team.artyukh.project.messages.server.FriendIdUpdate;
 import team.artyukh.project.messages.server.ViewCategoriesUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 public class FriendsActivity extends BindingActivity {
 	

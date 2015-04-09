@@ -135,7 +135,6 @@ public class ConnectionService extends Service {
 			} catch (JSONException e) {
 			}
 		}
-		
 		data.edit().putString(BindingActivity.PREF_GROUP_MEMBERS, members.toString()).apply();
 		
 		if(!BindingActivity.getStringPref(BindingActivity.PREF_GROUP).equals(message.getGroupId())){

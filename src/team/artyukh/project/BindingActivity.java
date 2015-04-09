@@ -22,6 +22,7 @@ import team.artyukh.project.messages.server.SearchUpdate;
 import team.artyukh.project.messages.server.ViewCategoriesUpdate;
 import team.artyukh.project.messages.server.ViewFriendCategoryUpdate;
 import team.artyukh.project.messages.server.ViewFriendsUpdate;
+import team.artyukh.project.messages.server.ViewGroupInfoUpdate;
 import team.artyukh.project.messages.server.ViewMarkersUpdate;
 import team.artyukh.project.messages.server.ViewProfileUpdate;
 import android.app.ActionBar;
@@ -202,6 +203,8 @@ public abstract class BindingActivity extends FragmentActivity {
 				applyUpdate(new ViewFriendCategoryUpdate(msgObj));
 			} else if(type.equals("locationchanged")){
 				onLocationChanged(msgObj);
+			} else if(type.equals("viewgroupinfo")){
+				applyUpdate(new ViewGroupInfoUpdate(msgObj));
 			}
 
 		} catch (JSONException e) {
@@ -315,6 +318,10 @@ public abstract class BindingActivity extends FragmentActivity {
 	}
 	
 	protected void applyUpdate(ViewFriendCategoryUpdate message){
+		
+	}
+	
+	protected void applyUpdate(ViewGroupInfoUpdate message){
 		
 	}
 	

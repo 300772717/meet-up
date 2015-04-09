@@ -22,6 +22,8 @@ public class LoginActivity extends BindingActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		
+		this.getActionBar().setTitle("Login");
 	}
 	
 	protected void applyUpdate(LoginUpdate update) {

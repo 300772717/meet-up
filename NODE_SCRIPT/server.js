@@ -2,6 +2,7 @@ var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '192.168.123.100';
 var nodeport = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var mongohost = process.env.OPENSHIFT_MONGODB_DB_HOST;
 var mongoport = process.env.OPENSHIFT_MONGODB_DB_PORT;
+var mongodburl = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://localhost/droidBase';
 //OPENSHIFT_MONGODB_DB_URL
 
 var WebSocketServer = require('ws').Server;
@@ -26,8 +27,7 @@ var async = require('async');
 
 var mongoose = require('mongoose');
 //'mongodb://localhost/droidBase'
-//'mongodb://admin:qXEZgf39U2gY@' + mongohost + ":" + mongoport + "/meetup"
-mongoose.connect('mongodb://admin:qXEZgf39U2gY@' + mongohost + ":" + mongoport + "/meetup");
+mongoose.connect(mongodburl + 'meetup');
 //admin:qXEZgf39U2gY@
 
 var db = mongoose.connection;
@@ -71,7 +71,12 @@ db.once('open', function (callback) {
 	blockInvites: {type: Boolean, default: false}});
 	idModel = mongoose.model('Id', schema);
 	
-	schema = new mongoose.Schema({group_id: String});
+	schema = new mongoose.Schema(
+	{group_id: String,
+	dateCreated: {type: String, default: '0'},
+	name: {type: String, default: 'No Name'},
+	purpose: {type: String, default: 'None'},
+	address: {type: String, default: ''}});
 	groupModel = mongoose.model('Group', schema);
 });
 
@@ -111,6 +116,12 @@ wss.on('connection', function(ws) {
 				break;
 			case 'updategroup':
 				updateGroup(data, ws, data.group);
+				break;
+			case 'editgroup':
+				editGroup(data, ws);
+				break;
+			case 'viewgroupinfo':
+				viewGroupInfo(data, ws);
 				break;
 			case 'invite':
 				sendInvite(data);
@@ -511,9 +522,41 @@ function sendMemberList(groupId, socket){
 	}
 }
 
+function editGroup(data, socket){
+	groupModel.findOne()
+	.where('_id').equals(data.id)
+	.exec(function(err, doc){
+		if(!err && doc){
+			doc.name = data.name;
+			doc.purpose = data.purpose;
+			doc.address = data.address;
+			doc.save(function(err, doc){
+				
+			});
+		}
+	});
+}
+
+function viewGroupInfo(data, socket){
+	result = {};
+	result.type = data.type;
+	groupModel.findOne()
+	.where('_id').equals(data.id)
+	.exec(function(err, doc){
+		if(!err && doc){
+			result.name = doc.name;
+			result.purpose = doc.purpose;
+			result.address = doc.address;
+			result.dateCreated = doc.dateCreated;
+			socket.send(JSON.stringify(result));
+		}
+	});
+}
+
 function createGroup(data, socket){
 	leaveGroup(data, socket);
-	var newGroup = new groupModel({group_id: data.username});
+	var date = new Date();
+	var newGroup = new groupModel({group_id: data.username, dateCreated: date.getTime()});
 	
 	newGroup.save(function(err, group){
 		if(!err){

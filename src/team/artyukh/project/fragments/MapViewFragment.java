@@ -10,12 +10,14 @@ import org.json.JSONObject;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -50,6 +52,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -61,6 +64,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 	private boolean mapLoaded = false;
 	private double minLat, minLon, maxLat, maxLon;
 	private CheckBox chkFriends, chkGroup, chkNearby;
+	private ImageButton btnLocateUser;
 	private LatLng myLoc;
 	private final double EARTH_RAD = 6371;
 	private final double BOX_SIZE = 10;
@@ -125,6 +129,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 			
 			myLoc = new LatLng(lat, lon);
 			calculateBox(myLoc);
+			updateMyLocation();
 		} catch (JSONException e) {
 		}
 		
@@ -185,6 +190,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		if(!mapLoaded) return;
 		Circle crc;
 		Marker mrk;
+		String userId = BindingActivity.getStringPref(BindingActivity.PREF_USER_ID);
 		
 		for(Circle c : circles){
 			c.remove();
@@ -206,13 +212,25 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		circles.clear();
 		
     	people = message.getPeople();
+    	int fillColor, strokeColor;
     	for(MapObject obj : people){
+    		if(obj.getId().equals(userId)){
+    			fillColor = Color.GREEN;
+    			strokeColor = Color.GREEN;
+    		}
+    		else {
+    			fillColor = Color.RED;
+    			strokeColor = Color.BLACK;
+    		}
+    		float diff = 12 - map.getCameraPosition().zoom;
+			float rad = (float) (100 * Math.pow(2, diff));
+			
     		LatLng spot = obj.getLocation();
     		crc = map.addCircle(new CircleOptions()
     		.center(spot)
-    		.radius(100)
-    		.fillColor(Color.RED)
-    		.strokeColor(Color.BLACK));
+    		.radius(rad)
+    		.fillColor(fillColor)
+    		.strokeColor(strokeColor));
 			circles.add(crc);
     	}
     	
@@ -320,6 +338,17 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
             tvDescr.setText(desc);
         }
     };
+    
+    private OnCameraChangeListener cameraListener = new OnCameraChangeListener(){
+		@Override
+		public void onCameraChange(CameraPosition pos) {
+			float diff = 12 - pos.zoom;
+			float rad = (float) (100 * Math.pow(2, diff));
+			for(Circle c : circles){
+				c.setRadius(rad);
+			}
+		}
+    };
 	
 	private void requestUpdate() {
 		//THE REQUEST CONSTRUCTOR TAKES RADIAN ANGLES
@@ -344,7 +373,8 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		map.setOnMapLongClickListener(this);
 		map.setOnMarkerClickListener(markerListener);
 		map.setInfoWindowAdapter(iwAdapter);
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 2));
+		map.setOnCameraChangeListener(cameraListener);
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 12));
 		mapLoaded = true;
 	}
 	
@@ -390,6 +420,7 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		chkFriends = (CheckBox) root.findViewById(R.id.cbFriends);
 		chkGroup = (CheckBox) root.findViewById(R.id.cbGroup);
 		chkNearby = (CheckBox) root.findViewById(R.id.cbNearby);
+		btnLocateUser = (ImageButton) root.findViewById(R.id.btnLocateUser);
 		
 		chkFriends.setChecked(getCheckedPref(BindingActivity.PREF_FILT_FRIENDS));
 		chkGroup.setChecked(getCheckedPref(BindingActivity.PREF_FILT_GROUP));
@@ -398,6 +429,8 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 		chkFriends.setOnClickListener(checkBoxListener);
 		chkGroup.setOnClickListener(checkBoxListener);
 		chkNearby.setOnClickListener(checkBoxListener);
+		btnLocateUser.setOnClickListener(locateUserListener);
+		
 
         return root;
 	}
@@ -425,7 +458,18 @@ public class MapViewFragment extends Fragment implements OnMapClickListener, OnM
 				break;
 			}
 		}
-		
+	};
+	
+	OnClickListener locateUserListener = new OnClickListener(){
+
+		@Override
+		public void onClick(View v) {
+			float zoom = map.getCameraPosition().zoom;
+			if(zoom < 12){
+				zoom = 12;
+			}
+			map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLoc, zoom));		
+		}
 	};
 	
 	@Override

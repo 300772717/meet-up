@@ -196,11 +196,12 @@ public class NewPlaceActivity extends BindingActivity implements OnMapReadyCallb
 		protected void onPostExecute(LatLng loc) {
 			
 			if(sendRequest){
+				sendRequest = false;
 				if(loc == null){
 					etAddress.setError("Cannot locate this address");
 					return;
 				}
-				sendRequest = false;
+				
 				
 				String address = etAddress.getText().toString();
 				String title = etTitle.getText().toString();
